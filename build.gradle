@@ -1,162 +1,102 @@
 /*
- * Mantle
- * Master build file
- * Based on TConstruct's master build file
- * Authors: Sunstrike, ProgWML6
- * Help from AbrarSyed
-*/
+ * Mantle - NeoForge 1.21.1 port build file
+ * Original ForgeGradle build by Sunstrike, ProgWML6 (Slime Knights).
+ * Converted to ModDevGradle for NeoForge 1.21.1.
+ */
 
 plugins {
-    id 'eclipse'
     id 'idea'
+    id 'eclipse'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.0.37]'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id 'io.freefair.lombok' version '8.6'
+    id 'net.neoforged.moddev' version '2.0.141'
+    id 'io.freefair.lombok' version '8.10'
 }
+
+group = 'slimeknights.mantle'
+version = "${minecraft_version}-${mod_version}"
+base {
+    archivesName = 'Mantle'
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}, Version: ${version}"
 
 repositories {
     mavenCentral()
     maven {
-        // Our maven
-        name "Prog's Maven"
-        url 'https://dvs1.progwml6.com/files/maven'
-    }
-    maven {
-        // JEI
-        name = "Jared's maven"
-        url = "https://maven.blamejared.com/"
-    }
-    maven {
-        // for Yarn2MCP
-        name "yarn2mcp"
-        url "https://maven.tterrag.com/"
-    }
-    // If you have mod jar dependencies in ./libs, you can declare them as a repository like so:
-    // flatDir {
-    //     dir 'libs'
-    // }
-}
-
-group = 'slimeknights.mantle'
-base {
-    archivesName = 'Mantle'
-}
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-
-// sets version to the slimeKnights version format
-task buildInfo {
-    try {
-        def cmd = "git rev-parse --short HEAD"
-        def proc = cmd.execute()
-        proc.waitFor()
-        if (proc.exitValue() == 0) {
-            ext.revision = proc.text.trim()
-        } else {
-            ext.revision = "GITBORK"
-        }
-    } catch (all) {
-        ext.revision = "gitgud"
-    }
-
-    if (System.getenv().BUILD_NUMBER != null) {
-        ext.buildNum = "${System.getenv().BUILD_NUMBER}"
-    } else {
-        ext.buildNum = "DEV.${project.buildInfo.revision}"
-    }
-}
-ext.artifact_version = 'NFG'
-if (System.getenv().ARTIFACT_VERSION == null) {
-    artifact_version = "${mod_version}.${project.buildInfo.buildNum}"
-}
-if (System.getenv().ARTIFACT_VERSION != null) {
-    artifact_version = "${system.getenv().ARTIFACT_VERSION}"
-}
-
-version = "${minecraft_version}-${artifact_version}"
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}, Version: ${version}"
-
-sourceSets {
-    main {
-        resources {
-            srcDirs "src/generated/resources"
-            //But exclude the cache of the generated data from what gets built
-            exclude '.cache'
-        }
+        name = 'BlameJared (JEI, CraftTweaker, etc.)'
+        url = 'https://maven.blamejared.com/'
     }
 }
 
-minecraft {
-    mappings channel: 'parchment', version: "${parchment_version}-${minecraft_version}"
+neoForge {
+    version = neoforge_version
 
-    enableIdeaPrepareRuns = true
-    copyIdeResources = true
+    parchment {
+        minecraftVersion = parchment_minecraft
+        mappingsVersion = parchment_version
+    }
 
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    // Mantle widens access to a few vanilla members.
+    accessTransformers.from('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
-
-        // applies to all the run configs below
         configureEach {
-            workingDirectory project.file('run')
-
-            // Recommended logging data for a userdev environment
-            // The markers can be added/remove as needed separated by commas.
-            // "SCAN": For mods scan.
-            // "REGISTRIES": For firing of registry events.
-            // "REGISTRYDUMP": For getting the contents of all registries.
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP,CORE'
-
-            // Recommended logging level for the console
-            // You can set various levels here.
-            // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                mantle {
-                    source sourceSets.main
-                }
-            }
+            gameDirectory = project.file('run')
+            logLevel = org.slf4j.event.Level.DEBUG
         }
-
         client {
+            client()
         }
-
         server {
-            args '--nogui'
+            server()
+            programArgument '--nogui'
         }
-
         data {
-            args '--mod', 'mantle', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            data()
+            programArguments.addAll(
+                '--mod', 'mantle',
+                '--all',
+                '--output', file('src/generated/resources/').absolutePath,
+                '--existing', file('src/main/resources/').absolutePath
+            )
+        }
+    }
+
+    mods {
+        mantle {
+            sourceSet sourceSets.main
         }
     }
 }
 
-configurations {
-    deployerJars
+// Generated datagen output is packed into the jar.
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+    exclude '.cache'
 }
-               
-dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // compile against the JEI API but do not include it at runtime
-    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
-    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
-    // at runtime, use the full JEI jar
-    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+dependencies {
+    // JEI integration lives in slimeknights.mantle.plugin; enable once that package is ported.
+    // compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    // runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 }
 
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
-        'version': artifact_version,
-        'loader_range': loader_range,
-        'minecraft_range': minecraft_range,
-        'forge_range': forge_range
+        version        : version,
+        loader_range   : loader_range,
+        minecraft_range: minecraft_range,
+        neoforge_range : neoforge_range
     ]
     inputs.properties replaceProperties
 
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties + [project: project]
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties
     }
 }
 
@@ -165,19 +105,12 @@ tasks.named('jar', Jar).configure {
         attributes([
                 "Specification-Title"     : "Mantle",
                 "Specification-Vendor"    : "Slime Knights",
-                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Specification-Version"   : "1",
                 "Implementation-Title"    : project.name,
                 "Implementation-Version"  : "${version}",
-                "Implementation-Vendor"   : "Slime Knights",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+                "Implementation-Vendor"   : "Slime Knights"
         ])
     }
-}
-
-jar.finalizedBy('reobfJar')
-
-java {
-    withSourcesJar()
 }
 
 sourcesJar {
@@ -185,21 +118,15 @@ sourcesJar {
     exclude 'data/**'
     exclude 'pack.png'
     exclude 'pack.mcmeta'
-    exclude 'META-INF/mods.toml'
-}
-
-artifacts {
-    archives sourcesJar
+    exclude 'META-INF/neoforge.mods.toml'
 }
 
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
-            artifact jar
-            artifact sourcesJar
+            from components.java
         }
     }
-
     repositories {
         if (project.hasProperty('DEPLOY_DIR')) {
             maven { url DEPLOY_DIR }
@@ -208,5 +135,5 @@ publishing {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    options.encoding = 'UTF-8'
 }

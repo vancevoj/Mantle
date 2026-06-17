@@ -1,7 +1,6 @@
 modLoader="javafml"
 loaderVersion="${loader_range}"
-issueTrackerURL="https://github.com/SlimeKnights/Mantle/issues"
-logoFile="Mantle.png"
+issueTrackerURL="https://github.com/vancevoj/Mantle/issues"
 license="MIT"
 
 [[mods]]
@@ -10,20 +9,20 @@ license="MIT"
     displayName="Mantle"
     authors="Slime Knights"
     description='''
-Shared code for Slime Knights mods and others.
+Shared code for Slime Knights mods and others. NeoForge 1.21.1 port.
     '''
-    displayURL="https://minecraft.curseforge.com/projects/mantle"
+    displayURL="https://github.com/vancevoj/Mantle"
 
 [[dependencies.mantle]]
-    modId="forge"
-    mandatory=true
-    versionRange="${forge_range}"
+    modId="neoforge"
+    type="required"
+    versionRange="${neoforge_range}"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.mantle]]
     modId="minecraft"
-    mandatory=true
+    type="required"
     versionRange="${minecraft_range}"
     ordering="NONE"
     side="BOTH"
