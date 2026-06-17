@@ -1,6 +1,8 @@
 package slimeknights.mantle.network;
 
-import net.neoforged.neoforge.network.NetworkDirection;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.fluid.transfer.FluidContainerTransferPacket;
 import slimeknights.mantle.network.packet.DropLecternBookPacket;
@@ -20,16 +22,26 @@ public class MantleNetwork {
   public static final NetworkWrapper INSTANCE = new NetworkWrapper(Mantle.getResource("network"), "2");
 
   /**
-   * Registers packets into this network
+   * Registers the payload handler listener on the mod event bus. Call from the mod constructor.
+   * @param modBus  Mod event bus
    */
-  public static void registerPackets() {
-    INSTANCE.registerPacket(OpenLecternBookPacket.class, OpenLecternBookPacket::new, NetworkDirection.PLAY_TO_CLIENT);
-    INSTANCE.registerPacket(UpdateHeldPagePacket.class, UpdateHeldPagePacket::new, NetworkDirection.PLAY_TO_SERVER);
-    INSTANCE.registerPacket(UpdateInventoryPagePacket.class, UpdateInventoryPagePacket::new, NetworkDirection.PLAY_TO_SERVER);
-    INSTANCE.registerPacket(UpdateLecternPagePacket.class, UpdateLecternPagePacket::new, NetworkDirection.PLAY_TO_SERVER);
-    INSTANCE.registerPacket(DropLecternBookPacket.class, DropLecternBookPacket::new, NetworkDirection.PLAY_TO_SERVER);
-    INSTANCE.registerPacket(SwingArmPacket.class, SwingArmPacket::new, NetworkDirection.PLAY_TO_CLIENT);
-    INSTANCE.registerPacket(OpenNamedBookPacket.class, OpenNamedBookPacket::new, NetworkDirection.PLAY_TO_CLIENT);
-    INSTANCE.registerPacket(FluidContainerTransferPacket.class, FluidContainerTransferPacket::new, NetworkDirection.PLAY_TO_CLIENT);
+  public static void init(IEventBus modBus) {
+    modBus.addListener(RegisterPayloadHandlersEvent.class, MantleNetwork::registerPackets);
+  }
+
+  /**
+   * Registers packets into this network. Invoked from {@link RegisterPayloadHandlersEvent} on the mod bus.
+   * @param event  Payload registration event
+   */
+  public static void registerPackets(RegisterPayloadHandlersEvent event) {
+    PayloadRegistrar registrar = INSTANCE.getRegistrar(event);
+    INSTANCE.registerToClient(registrar, OpenLecternBookPacket.TYPE, OpenLecternBookPacket::new);
+    INSTANCE.registerToServer(registrar, UpdateHeldPagePacket.TYPE, UpdateHeldPagePacket::new);
+    INSTANCE.registerToServer(registrar, UpdateInventoryPagePacket.TYPE, UpdateInventoryPagePacket::new);
+    INSTANCE.registerToServer(registrar, UpdateLecternPagePacket.TYPE, UpdateLecternPagePacket::new);
+    INSTANCE.registerToServer(registrar, DropLecternBookPacket.TYPE, DropLecternBookPacket::new);
+    INSTANCE.registerToClient(registrar, SwingArmPacket.TYPE, SwingArmPacket::new);
+    INSTANCE.registerToClient(registrar, OpenNamedBookPacket.TYPE, OpenNamedBookPacket::new);
+    INSTANCE.registerToClient(registrar, FluidContainerTransferPacket.TYPE, FluidContainerTransferPacket::new);
   }
 }

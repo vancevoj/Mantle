@@ -3,11 +3,14 @@ package slimeknights.mantle.network.packet;
 import lombok.AllArgsConstructor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.LecternBlockEntity;
-import net.neoforged.neoforge.network.NetworkEvent.Context;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import slimeknights.mantle.Mantle;
 import slimeknights.mantle.client.book.BookHelper;
 import slimeknights.mantle.util.BlockEntityHelper;
 
@@ -16,6 +19,9 @@ import slimeknights.mantle.util.BlockEntityHelper;
  */
 @AllArgsConstructor
 public class UpdateLecternPagePacket implements IThreadsafePacket {
+  public static final Type<UpdateLecternPagePacket> TYPE = new Type<>(Mantle.getResource("update_lectern_page"));
+  public static final StreamCodec<RegistryFriendlyByteBuf,UpdateLecternPagePacket> STREAM_CODEC = ISimplePacket.codec(UpdateLecternPagePacket::new);
+
   private final BlockPos pos;
   private final String page;
   public UpdateLecternPagePacket(FriendlyByteBuf buffer) {
@@ -30,8 +36,13 @@ public class UpdateLecternPagePacket implements IThreadsafePacket {
   }
 
   @Override
-  public void handleThreadsafe(Context context) {
-    Player player = context.getSender();
+  public Type<UpdateLecternPagePacket> type() {
+    return TYPE;
+  }
+
+  @Override
+  public void handleThreadsafe(IPayloadContext context) {
+    Player player = context.player();
     if (player != null && this.page != null) {
       Level world = player.getCommandSenderWorld();
       BlockEntityHelper.get(LecternBlockEntity.class, world, this.pos).ifPresent(te -> {
