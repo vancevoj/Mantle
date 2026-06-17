@@ -10,7 +10,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.loot.MantleLoot;
 
-/** Condition that checks when a tag is empty. Same as {@link net.minecraftforge.common.crafting.conditions.TagEmptyCondition} but for any registry */
+/** Condition that checks when a tag is empty. Same as {@link net.neoforged.neoforge.common.crafting.conditions.TagEmptyCondition} but for any registry */
 public class TagEmptyCondition<T> extends TagCondition<T> implements LootItemCondition {
   public static final Serializer<TagEmptyCondition<?>> SERIALIZER = new Serializer<>(Mantle.getResource("tag_empty"), TagEmptyCondition::new);
 

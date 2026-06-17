@@ -32,7 +32,7 @@ public class FileRepository extends BookRepository {
   @Override
   public ResourceLocation getResourceLocation(@Nullable String path, boolean safe) {
     if (path == null) {
-      return safe ? new ResourceLocation("") : null;
+      return safe ? ResourceLocation.parse("") : null;
     }
 
     if (!path.contains(":")) {
@@ -64,13 +64,13 @@ public class FileRepository extends BookRepository {
         return res;
       }
     } else {
-      ResourceLocation res = new ResourceLocation(path);
+      ResourceLocation res = ResourceLocation.parse(path);
       if (this.resourceExists(res)) {
         return res;
       }
     }
 
-    return safe ? new ResourceLocation("") : null;
+    return safe ? ResourceLocation.parse("") : null;
   }
 
   @Override

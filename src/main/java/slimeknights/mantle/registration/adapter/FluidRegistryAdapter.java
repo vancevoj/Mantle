@@ -1,9 +1,9 @@
 package slimeknights.mantle.registration.adapter;
 
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.fluids.ForgeFlowingFluid;
-import net.minecraftforge.fluids.ForgeFlowingFluid.Properties;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.neoforged.neoforge.fluids.ForgeFlowingFluid;
+import net.neoforged.neoforge.fluids.ForgeFlowingFluid.Properties;
+import net.neoforged.neoforge.registries.IForgeRegistry;
 import slimeknights.mantle.registration.DelayedSupplier;
 import slimeknights.mantle.registration.FluidBuilder;
 

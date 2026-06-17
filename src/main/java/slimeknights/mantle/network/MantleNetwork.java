@@ -1,6 +1,6 @@
 package slimeknights.mantle.network;
 
-import net.minecraftforge.network.NetworkDirection;
+import net.neoforged.neoforge.network.NetworkDirection;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.fluid.transfer.FluidContainerTransferPacket;
 import slimeknights.mantle.network.packet.DropLecternBookPacket;

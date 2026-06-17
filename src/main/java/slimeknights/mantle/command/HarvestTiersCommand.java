@@ -16,7 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.TierSortingRegistry;
+import net.neoforged.neoforge.common.TierSortingRegistry;
 import slimeknights.mantle.Mantle;
 
 import java.io.BufferedWriter;
@@ -30,7 +30,7 @@ import java.util.Objects;
 /** Command to dump global loot modifiers */
 public class HarvestTiersCommand {
   /** Resource location of the global loot manager "tag" */
-  protected static final ResourceLocation HARVEST_TIERS = new ResourceLocation("forge", "item_tier_ordering.json");
+  protected static final ResourceLocation HARVEST_TIERS = ResourceLocation.fromNamespaceAndPath("forge", "item_tier_ordering.json");
   /** Path for saving the loot modifiers */
   private static final String HARVEST_TIER_PATH = HARVEST_TIERS.getNamespace() + "/" + HARVEST_TIERS.getPath();
 

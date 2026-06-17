@@ -17,10 +17,10 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.PacketDistributor.PacketTarget;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor.PacketTarget;
+import net.neoforged.neoforge.registries.IForgeRegistry;
 import org.jetbrains.annotations.Contract;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.data.loadable.Loadable;
@@ -168,7 +168,7 @@ public class JsonHelper {
   public static ResourceLocation parseResourceLocation(String text, String key) {
     // basically the inside of ResourceLocation#tryParse, but with a JSON exception instead of being nullable
     try {
-      return new ResourceLocation(text);
+      return ResourceLocation.parse(text);
     } catch (ResourceLocationException ex) {
       throw new JsonSyntaxException("Expected " + key + " to be a resource location, was '" + text + "'", ex);
     }
@@ -295,7 +295,7 @@ public class JsonHelper {
       .getNamespaces().stream()
       .filter(ResourceLocation::isValidNamespace)
       .flatMap(namespace -> {
-        ResourceLocation location = new ResourceLocation(namespace, path);
+        ResourceLocation location = ResourceLocation.fromNamespaceAndPath(namespace, path);
         return manager.getResourceStack(location).stream()
           .map(preferredPath != null ? resource -> {
             Mantle.logger.warn("Using deprecated path {} in pack {} - use {}:{} instead", location, resource.sourcePackId(), location.getNamespace(), preferredPath);

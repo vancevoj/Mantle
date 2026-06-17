@@ -1,6 +1,6 @@
 package slimeknights.mantle.util;
 
-import net.minecraftforge.common.util.LazyOptional;
+import net.neoforged.neoforge.common.util.LazyOptional;
 
 import javax.annotation.Nullable;
 import java.util.List;

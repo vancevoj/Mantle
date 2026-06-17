@@ -1,7 +1,7 @@
 package slimeknights.mantle.recipe;
 
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraftforge.registries.ObjectHolder;
+import net.neoforged.neoforge.registries.ObjectHolder;
 import slimeknights.mantle.Mantle;
 
 import static slimeknights.mantle.registration.RegistrationHelper.injected;

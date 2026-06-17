@@ -1,7 +1,7 @@
 package slimeknights.mantle.registration.adapter;
 
 import net.minecraft.util.StringRepresentable;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.neoforged.neoforge.registries.IForgeRegistry;
 import slimeknights.mantle.registration.object.EnumObject;
 
 import java.util.function.Function;

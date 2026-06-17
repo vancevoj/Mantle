@@ -3,8 +3,8 @@ package slimeknights.mantle.fluid.transfer;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.network.NetworkEvent.Context;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.network.NetworkEvent.Context;
+import net.neoforged.neoforge.registries.ForgeRegistries;
 import slimeknights.mantle.network.packet.IThreadsafePacket;
 
 import java.util.ArrayList;

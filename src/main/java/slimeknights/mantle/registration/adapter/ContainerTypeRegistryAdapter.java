@@ -2,9 +2,9 @@ package slimeknights.mantle.registration.adapter;
 
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraftforge.common.extensions.IForgeMenuType;
-import net.minecraftforge.network.IContainerFactory;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.neoforged.neoforge.common.extensions.IForgeMenuType;
+import net.neoforged.neoforge.network.IContainerFactory;
+import net.neoforged.neoforge.registries.IForgeRegistry;
 
 @SuppressWarnings("unused")
 public class ContainerTypeRegistryAdapter extends RegistryAdapter<MenuType<?>> {

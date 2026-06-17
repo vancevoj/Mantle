@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.ForgeI18n;
+import net.neoforged.neoforge.common.ForgeI18n;
 
 import javax.annotation.Nullable;
 import java.text.DecimalFormat;

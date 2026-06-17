@@ -30,12 +30,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.ToolAction;
-import net.minecraftforge.common.ToolActions;
-import net.minecraftforge.entity.PartEntity;
-import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.event.entity.player.CriticalHitEvent;
+import net.neoforged.neoforge.common.ForgeHooks;
+import net.neoforged.neoforge.common.ToolAction;
+import net.neoforged.neoforge.common.ToolActions;
+import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
 import slimeknights.mantle.Mantle;
 
 import javax.annotation.Nullable;
@@ -143,7 +143,7 @@ public class CombatHelper {
   /**
    * Performs an attack, mimicking  {@link Player#attack(Entity)}.
    * For use in {@link net.minecraft.world.item.Item#interactLivingEntity(ItemStack, Player, LivingEntity, InteractionHand)} primarily,
-   * but can also be used to fake an attack similar to {@link net.minecraftforge.common.extensions.IForgeItem#onLeftClickEntity(ItemStack, Player, Entity)}.
+   * but can also be used to fake an attack similar to {@link net.neoforged.neoforge.common.extensions.IForgeItem#onLeftClickEntity(ItemStack, Player, Entity)}.
    *
    * @param stack         Stack used for attacking.
    * @param target        Entity target
@@ -157,7 +157,7 @@ public class CombatHelper {
   /**
    * Performs an attack, mimicking {@link Player#attack(Entity)} but allowing the damage source to be swapped.
    * For use in {@link net.minecraft.world.item.Item#interactLivingEntity(ItemStack, Player, LivingEntity, InteractionHand)} primarily,
-   * but can also be used to fake an attack similar to {@link net.minecraftforge.common.extensions.IForgeItem#onLeftClickEntity(ItemStack, Player, Entity)}.
+   * but can also be used to fake an attack similar to {@link net.neoforged.neoforge.common.extensions.IForgeItem#onLeftClickEntity(ItemStack, Player, Entity)}.
    *
    * @param stack         Stack used for attacking.
    * @param target        Entity target

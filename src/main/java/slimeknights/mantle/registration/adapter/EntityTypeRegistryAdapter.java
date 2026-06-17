@@ -2,7 +2,7 @@ package slimeknights.mantle.registration.adapter;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.neoforged.neoforge.registries.IForgeRegistry;
 
 /**
  * Registry adapter for registering entity types

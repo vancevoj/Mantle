@@ -806,7 +806,7 @@ public class BookScreen extends Screen {
     }
 
     public Advancement getAdvancement(String id) {
-      return this.nameCache.get(new ResourceLocation(id));
+      return this.nameCache.get(ResourceLocation.parse(id));
     }
 
     @Override

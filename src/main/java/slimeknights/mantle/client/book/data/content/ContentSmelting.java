@@ -101,7 +101,7 @@ public class ContentSmelting extends PageContent {
     if (!StringUtils.isEmpty(this.recipe) && ResourceLocation.isValidResourceLocation(this.recipe)) {
       Level level = Minecraft.getInstance().level;
       assert level != null;
-      Recipe<?> recipe = level.getRecipeManager().byKey(new ResourceLocation(this.recipe)).orElse(null);
+      Recipe<?> recipe = level.getRecipeManager().byKey(ResourceLocation.parse(this.recipe)).orElse(null);
 
       if (recipe instanceof AbstractCookingRecipe) {
         this.input = IngredientData.getItemStackData(NonNullList.of(ItemStack.EMPTY, recipe.getIngredients().get(0).getItems()));

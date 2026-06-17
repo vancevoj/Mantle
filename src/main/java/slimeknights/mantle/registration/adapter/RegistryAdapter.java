@@ -2,13 +2,13 @@ package slimeknights.mantle.registration.adapter;
 
 import lombok.RequiredArgsConstructor;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.neoforge.registries.IForgeRegistry;
 
 import java.util.Objects;
 
 /**
- * A convenience wrapper for forge registries, to be used in combination with the {@link net.minecraftforge.registries.RegisterEvent} event.
+ * A convenience wrapper for forge registries, to be used in combination with the {@link net.neoforged.neoforge.registries.RegisterEvent} event.
  * Simply put it allows you to register things by passing (thing, name) instead of having to set the name inline.
  * There also is a convenience variant for items and itemblocks, see {@link ItemRegistryAdapter}.
  */
@@ -32,7 +32,7 @@ public class RegistryAdapter<T> {
    * @param name  Name for location
    */
   public ResourceLocation getResource(String name) {
-    return new ResourceLocation(modId, name);
+    return ResourceLocation.fromNamespaceAndPath(modId, name);
   }
 
   /**

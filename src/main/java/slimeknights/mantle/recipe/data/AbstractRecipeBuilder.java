@@ -88,7 +88,7 @@ public abstract class AbstractRecipeBuilder<T extends AbstractRecipeBuilder<T>> 
    */
   private ResourceLocation buildAdvancementInternal(ResourceLocation id, String folder) {
     this.advancementBuilder
-        .parent(new ResourceLocation("recipes/root"))
+        .parent(ResourceLocation.parse("recipes/root"))
         .rewards(AdvancementRewards.Builder.recipe(id))
         .requirements(RequirementsStrategy.OR);
     // we directly add the critera through the map as we want to replace it if already added instead of erroring

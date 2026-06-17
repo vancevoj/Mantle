@@ -9,7 +9,7 @@ import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.crafting.IShapedRecipe;
+import net.neoforged.neoforge.common.crafting.IShapedRecipe;
 import org.apache.commons.lang3.StringUtils;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.client.book.data.BookData;
@@ -117,7 +117,7 @@ public class ContentCrafting extends PageContent {
 
       Level level = Minecraft.getInstance().level;
       assert level != null;
-      Recipe<?> recipe = level.getRecipeManager().byKey(new ResourceLocation(this.recipe)).orElse(null);
+      Recipe<?> recipe = level.getRecipeManager().byKey(ResourceLocation.parse(this.recipe)).orElse(null);
       if (recipe instanceof CraftingRecipe) {
         if(grid_size.equalsIgnoreCase("auto")) {
           if(recipe.canCraftInDimensions(2, 2)) {
