@@ -19,7 +19,7 @@ import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.ForgeFlowingFluid;
 import net.neoforged.neoforge.fluids.ForgeFlowingFluid.Properties;
 import net.neoforged.neoforge.registries.ForgeRegistries;
-import net.neoforged.neoforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import slimeknights.mantle.block.fluid.BurningLiquidBlock;
 import slimeknights.mantle.block.fluid.MobEffectLiquidBlock;
 import slimeknights.mantle.fluid.InvertedFluid;
@@ -67,7 +67,7 @@ public class FluidDeferredRegister extends DeferredRegisterWrapper<Fluid> {
    * @param <I>   Fluid type
    * @return  Fluid to supply
    */
-  public <I extends FluidType> RegistryObject<I> registerType(String name, Supplier<? extends I> sup) {
+  public <I extends FluidType> DeferredHolder<?, I> registerType(String name, Supplier<? extends I> sup) {
     return fluidTypeRegister.register(name, sup);
   }
 
@@ -78,7 +78,7 @@ public class FluidDeferredRegister extends DeferredRegisterWrapper<Fluid> {
    * @param <I>   Fluid type
    * @return  Fluid to supply
    */
-  public <I extends Fluid> RegistryObject<I> registerFluid(String name, Supplier<? extends I> sup) {
+  public <I extends Fluid> DeferredHolder<?, I> registerFluid(String name, Supplier<? extends I> sup) {
     return register.register(name, sup);
   }
 
@@ -200,7 +200,7 @@ public class FluidDeferredRegister extends DeferredRegisterWrapper<Fluid> {
       if (type == null) {
         this.type();
       }
-      RegistryObject<F> fluid = registerFluid(name, () -> constructor.apply(this));
+      DeferredHolder<?, F> fluid = registerFluid(name, () -> constructor.apply(this));
       stillDelayed.setSupplier(fluid);
       return new FluidObject<>(resource(name), commonTag, type, fluid);
     }
