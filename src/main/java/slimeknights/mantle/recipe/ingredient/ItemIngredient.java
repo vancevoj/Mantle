@@ -3,7 +3,7 @@ package slimeknights.mantle.recipe.ingredient;
 import com.google.gson.JsonObject;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -84,12 +84,12 @@ public abstract class ItemIngredient implements ICustomIngredient {
     }
 
     @Override
-    public List<Item> decode(RegistryFriendlyByteBuf buffer, TypedMap context) {
+    public List<Item> decode(FriendlyByteBuf buffer, TypedMap context) {
       return ITEM_LIST.decode(buffer, context);
     }
 
     @Override
-    public void encode(RegistryFriendlyByteBuf buffer, ItemIngredient parent) {
+    public void encode(FriendlyByteBuf buffer, ItemIngredient parent) {
       // sync both tag and item values to client
       ITEM_LIST.encode(buffer, parent.getItems().map(ItemStack::getItem).toList());
     }

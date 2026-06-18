@@ -163,7 +163,7 @@ public class ClientEvents {
     switch (indicator) {
       case CROSSHAIR:
         if (!isHotbar && minecraft.options.getCameraType().isFirstPerson()) {
-          if (!settings.renderDebug || settings.hideGui || minecraft.player.isReducedDebugInfo() || settings.reducedDebugInfo().get()) {
+          if (!minecraft.gui.getDebugOverlay().showDebugScreen() || settings.hideGui || minecraft.player.isReducedDebugInfo() || settings.reducedDebugInfo().get()) {
             // mostly cloned from vanilla attack indicator
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);

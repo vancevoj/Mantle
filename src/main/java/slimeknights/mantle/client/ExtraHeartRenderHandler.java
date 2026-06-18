@@ -215,18 +215,15 @@ public class ExtraHeartRenderHandler implements LayeredDraw.Layer {
       renderHearts(graphics, left, top - absorptionOffset, absorpOffset, absorb, 10);
     }
 
-    // prepare the GUI for the event
-    RenderSystem.setShaderTexture(0, ICON_VANILLA);
-    gui.leftHeight += ROW_HEIGHT;
+    // advance the shared HUD offset so layers drawn after us (food, armor, air) stack above the hearts,
+    // matching what vanilla's renderHealthLevel does. GuiGraphics.blit binds its own texture, so no manual
+    // RenderSystem state is needed, and because this layer replaces PLAYER_HEALTH there is no event to cancel/repost.
+    this.mc.gui.leftHeight += ROW_HEIGHT;
     if (!compactAbsorption && absorb > 0) {
-      gui.leftHeight += absorptionOffset;
+      this.mc.gui.leftHeight += absorptionOffset;
     }
 
-    event.setCanceled(true);
-    RenderSystem.disableBlend();
     this.mc.getProfiler().pop();
-    //noinspection UnstableApiUsage  I do what I want (more accurately, we override the renderer but want to let others still respond in post)
-    NeoForge.EVENT_BUS.post(new RenderGuiOverlayEvent.Post(event.getWindow(), graphics, event.getPartialTick(), VanillaGuiOverlay.PLAYER_HEALTH.type()));
   }
 
   /** Computes the color U offset for a given heart index */

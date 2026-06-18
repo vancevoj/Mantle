@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
@@ -325,12 +326,12 @@ public abstract class ItemOutput implements Supplier<ItemStack> {
     }
 
     @Override
-    public ItemOutput decode(RegistryFriendlyByteBuf buffer, TypedMap context) {
+    public ItemOutput decode(FriendlyByteBuf buffer, TypedMap context) {
       return fromStack(stack.decode(buffer, context));
     }
 
     @Override
-    public void encode(RegistryFriendlyByteBuf buffer, ItemOutput object) {
+    public void encode(FriendlyByteBuf buffer, ItemOutput object) {
       stack.encode(buffer, object.get());
     }
 

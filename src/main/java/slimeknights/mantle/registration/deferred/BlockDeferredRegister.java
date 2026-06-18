@@ -251,7 +251,7 @@ public class BlockDeferredRegister extends DeferredRegisterWrapper<Block> {
     Function<? super Block, ? extends BlockItem> burnable300 = burnableItem.apply(300);
     BlockBehaviour.Properties planksProps = behaviorCreator.apply(WoodBlockObject.WoodVariant.PLANKS).instrument(NoteBlockInstrument.BASS).strength(2.0f, 3.0f);
     BuildingBlockObject planks = registerBuilding(name + "_planks", planksProps, block -> burnableItem.apply(block instanceof SlabBlock ? 150 : 300).apply(block));
-    ItemObject<FenceBlock> fence = register(name + "_fence", () -> new FenceBlock(Properties.copy(planks.get()).forceSolidOn()), burnable300);
+    ItemObject<FenceBlock> fence = register(name + "_fence", () -> new FenceBlock(Properties.ofFullCopy(planks.get()).forceSolidOn()), burnable300);
     // logs and wood
     Supplier<? extends RotatedPillarBlock> stripped = () -> new RotatedPillarBlock(behaviorCreator.apply(WoodBlockObject.WoodVariant.PLANKS).instrument(NoteBlockInstrument.BASS).strength(2.0f));
     ItemObject<RotatedPillarBlock> strippedLog = register("stripped_" + name + "_log", stripped, burnable300);

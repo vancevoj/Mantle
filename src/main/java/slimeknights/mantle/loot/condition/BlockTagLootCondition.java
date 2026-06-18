@@ -30,7 +30,7 @@ public record BlockTagLootCondition(TagKey<Block> tag, Optional<StatePropertiesP
   }
 
   public BlockTagLootCondition(TagKey<Block> tag, StatePropertiesPredicate.Builder builder) {
-    this(tag, Optional.of(builder.build()));
+    this(tag, builder.build());
   }
 
   @Override

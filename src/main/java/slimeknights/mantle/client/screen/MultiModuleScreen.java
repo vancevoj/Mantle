@@ -205,11 +205,8 @@ public class MultiModuleScreen<CONTAINER extends MultiModuleContainerMenu<?>> ex
       }
     }
 
-    // update slot positions
-    if (slotIn instanceof WrapperSlot) {
-      slotIn.x = ((WrapperSlot) slotIn).parent.x;
-      slotIn.y = ((WrapperSlot) slotIn).parent.y;
-    }
+    // 1.21: Slot.x/y are final, so the wrapper position can no longer be re-synced here.
+    // WrapperSlot is already constructed at its parent's x/y (see WrapperSlot constructor), so no update is needed.
 
     super.renderSlot(graphics, slotIn);
   }

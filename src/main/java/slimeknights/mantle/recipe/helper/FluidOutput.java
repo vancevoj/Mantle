@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
@@ -261,12 +262,12 @@ public abstract class FluidOutput implements Supplier<FluidStack> {
     }
 
     @Override
-    public FluidOutput decode(RegistryFriendlyByteBuf buffer, TypedMap context) {
+    public FluidOutput decode(FriendlyByteBuf buffer, TypedMap context) {
       return fromStack(stack.decode(buffer, context));
     }
 
     @Override
-    public void encode(RegistryFriendlyByteBuf buffer, FluidOutput object) {
+    public void encode(FriendlyByteBuf buffer, FluidOutput object) {
       stack.encode(buffer, object.get());
     }
 

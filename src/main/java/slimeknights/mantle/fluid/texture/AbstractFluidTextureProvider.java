@@ -78,7 +78,7 @@ public abstract class AbstractFluidTextureProvider extends GenericDataProvider {
   }
 
   /** Create a new builder for the give fluid type */
-  public FluidTexture.Builder texture(DeferredHolder<?, ? extends FluidType> fluid) {
+  public FluidTexture.Builder texture(DeferredHolder<FluidType, ? extends FluidType> fluid) {
     return texture(fluid.get());
   }
 
@@ -93,7 +93,7 @@ public abstract class AbstractFluidTextureProvider extends GenericDataProvider {
   }
 
   /** Marks the given fluid type to be ignored by this texture provider */
-  public void skip(DeferredHolder<?, ? extends FluidType> fluid) {
+  public void skip(DeferredHolder<FluidType, ? extends FluidType> fluid) {
     skip(fluid.get());
   }
 }

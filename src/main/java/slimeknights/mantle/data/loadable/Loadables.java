@@ -23,13 +23,13 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntries;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.neoforged.neoforge.common.ItemAbility;
-import net.neoforged.neoforge.common.loot.LootModifierManager;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import slimeknights.mantle.client.model.util.ModelHelper;
-import slimeknights.mantle.data.loadable.common.GsonLoadable;
+import slimeknights.mantle.data.loadable.common.CodecLoadable;
 import slimeknights.mantle.data.loadable.common.LazyRegistryLoadable;
 import slimeknights.mantle.data.loadable.common.RegistryLoadable;
 import slimeknights.mantle.data.loadable.primitive.EnumLoadable;
@@ -86,7 +86,7 @@ public class Loadables {
 
   /* Loot tables */
   /** Loadable for a loot entry instance */
-  public static final Loadable<LootPoolEntryContainer> LOOT_ENTRY = new GsonLoadable<>(LootModifierManager.GSON_INSTANCE, LootPoolEntryContainer.class);
+  public static final Loadable<LootPoolEntryContainer> LOOT_ENTRY = new CodecLoadable<>(LootPoolEntries.CODEC);
 
   /** Loadable for a rotation value, from 0 to 270 */
   public static final Loadable<Integer> ROTATION = new IntLoadable(0, 270, IntNetwork.SHORT).validate((value, error) -> {
