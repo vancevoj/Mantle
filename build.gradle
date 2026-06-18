@@ -81,9 +81,17 @@ sourceSets.main.resources {
 }
 
 dependencies {
-    // JEI integration lives in slimeknights.mantle.plugin; enable once that package is ported.
-    // compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
-    // runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    // JEI integration lives in slimeknights.mantle.plugin. The JEI 1.21.1 API differs from 1.20.1
+    // and the plugin package is not ported yet, so JEI is temporarily disabled and the plugin
+    // sources are excluded below (see sourceSets). Re-enable both together once plugin/ is ported.
+    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+}
+
+// TEMPORARY: JEI integration package not yet ported to the 1.21.1 JEI API. Excluded so the core
+// library builds; remove this exclude once slimeknights.mantle.plugin.jei is ported.
+sourceSets.main.java {
+    exclude 'slimeknights/mantle/plugin/**'
 }
 
 tasks.named('processResources', ProcessResources).configure {
