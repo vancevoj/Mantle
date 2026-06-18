@@ -1,22 +1,25 @@
 package slimeknights.mantle.registration;
 
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.neoforge.registries.ObjectHolder;
-import slimeknights.mantle.Mantle;
 import slimeknights.mantle.block.entity.MantleHangingSignBlockEntity;
 import slimeknights.mantle.block.entity.MantleSignBlockEntity;
 
-import static slimeknights.mantle.registration.RegistrationHelper.injected;
+import javax.annotation.Nullable;
 
 /**
- * Various objects registered under Mantle
+ * Various objects registered under Mantle.
+ * <p>
+ * NeoForge 1.21 removed {@code @ObjectHolder} injection, so these are populated during block entity type
+ * registration (see the {@code BLOCK_ENTITY_TYPE} branch of {@code Mantle#register}) instead of being injected.
  */
 public class MantleRegistrations {
   private MantleRegistrations() {}
 
-  @ObjectHolder(registryName = "minecraft:block_entity_type", value = Mantle.modId+":sign")
-  public static final BlockEntityType<MantleSignBlockEntity> SIGN = injected();
+  /** Sign block entity type, assigned during registration. May be null before block entity types are registered. */
+  @Nullable
+  public static BlockEntityType<MantleSignBlockEntity> SIGN = null;
 
-  @ObjectHolder(registryName = "minecraft:block_entity_type", value = Mantle.modId+":hanging_sign")
-  public static final BlockEntityType<MantleHangingSignBlockEntity> HANGING_SIGN = injected();
+  /** Hanging sign block entity type, assigned during registration. May be null before block entity types are registered. */
+  @Nullable
+  public static BlockEntityType<MantleHangingSignBlockEntity> HANGING_SIGN = null;
 }

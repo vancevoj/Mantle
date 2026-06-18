@@ -7,22 +7,23 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringUtil;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 import slimeknights.mantle.client.book.repository.BookRepository;
 import slimeknights.mantle.recipe.ingredient.SizedIngredient;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.List;
 
 public class IngredientData implements IDataElement {
   public SizedIngredient[] ingredients = new SizedIngredient[0];
@@ -82,14 +83,12 @@ public class IngredientData implements IDataElement {
   private ItemStack getMissingItem(String error) {
     ItemStack missingItem = new ItemStack(Items.BARRIER);
 
-    CompoundTag display = missingItem.getOrCreateTagElement("display");
-    display.putString("Name", "\u00A7rError Loading Item");
-    ListTag lore = new ListTag();
+    missingItem.set(DataComponents.CUSTOM_NAME, Component.literal("\u00A7rError Loading Item"));
     if(!StringUtil.isNullOrEmpty(error)) {
-      lore.add(StringTag.valueOf("\u00A7r\u00A7eError:"));
-      lore.add(StringTag.valueOf("\u00A7r\u00A7e" + error));
+      missingItem.set(DataComponents.LORE, new ItemLore(List.of(
+        Component.literal("\u00A7r\u00A7eError:"),
+        Component.literal("\u00A7r\u00A7e" + error))));
     }
-    display.put("Lore", lore);
 
     return missingItem;
   }
@@ -142,7 +141,7 @@ public class IngredientData implements IDataElement {
         JsonPrimitive primitive = json.getAsJsonPrimitive();
 
         if(primitive.isString()) {
-          Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(primitive.getAsString()));
+          Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(primitive.getAsString()));
           return SizedIngredient.fromItems(item);
         }
       }

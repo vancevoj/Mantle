@@ -1,6 +1,8 @@
 package slimeknights.mantle.data.loadable.common;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -26,7 +28,7 @@ public class FluidStackLoadable {
   /** Getter for an item from a stack */
   private static final Function<FluidStack,Fluid> FLUID_GETTER = FluidStack::getFluid;
   /** Checks if a stack can be serialized to a primitive, ignoring count */
-  private static final Predicate<FluidStack> COMPACT_NBT = stack -> !stack.hasTag();
+  private static final Predicate<FluidStack> COMPACT_NBT = stack -> !hasTag(stack);
   /** Maps a fluid stack that may be empty to a strictly not empty one */
   private static final BiFunction<FluidStack,ErrorFactory,FluidStack> NOT_EMPTY = (stack, error) -> {
     if (stack.isEmpty()) {
@@ -41,7 +43,7 @@ public class FluidStackLoadable {
   /** Field for fluid stack count that allows empty */
   private static final LoadableField<Integer,FluidStack> AMOUNT = IntLoadable.FROM_ZERO.requiredField("amount", FluidStack::getAmount);
   /** Field for fluid stack count */
-  private static final LoadableField<CompoundTag,FluidStack> NBT = NBTLoadable.ALLOW_STRING.nullableField("nbt", FluidStack::getTag);
+  private static final LoadableField<CompoundTag,FluidStack> NBT = NBTLoadable.ALLOW_STRING.nullableField("nbt", FluidStackLoadable::getTag);
 
 
   /* Optional */
@@ -73,7 +75,25 @@ public class FluidStackLoadable {
     if (fluid == Fluids.EMPTY || amount <= 0) {
       return FluidStack.EMPTY;
     }
-    return new FluidStack(fluid, amount, nbt);
+    FluidStack stack = new FluidStack(fluid, amount);
+    // NBT on a stack is stored as the custom data component since 1.20.5
+    if (nbt != null && !nbt.isEmpty()) {
+      stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
+    }
+    return stack;
+  }
+
+  /** Gets the custom data NBT from a stack, or null if absent */
+  @Nullable
+  private static CompoundTag getTag(FluidStack stack) {
+    CustomData data = stack.getComponents().get(DataComponents.CUSTOM_DATA);
+    return data == null ? null : data.copyTag();
+  }
+
+  /** Checks if a stack has custom data NBT */
+  private static boolean hasTag(FluidStack stack) {
+    CustomData data = stack.getComponents().get(DataComponents.CUSTOM_DATA);
+    return data != null && !data.isEmpty();
   }
 
   /** Creates a loadable for a stack with a single item */

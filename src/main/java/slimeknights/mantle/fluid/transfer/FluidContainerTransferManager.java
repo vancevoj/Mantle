@@ -10,14 +10,15 @@ import lombok.extern.log4j.Log4j2;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
+import com.mojang.serialization.JsonOps;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.bus.api.EventPriority;
@@ -59,8 +60,9 @@ public class FluidContainerTransferManager extends SimpleJsonResourceReloadListe
   @Setter @Nullable
   private Set<Item> containerItems = Collections.emptySet();
 
-  /** Condition context for tags */
-  private IContext context = IContext.EMPTY;
+  /** Registry ops used to evaluate conditions during load. Null until the first reload provides a registry access. */
+  @Nullable
+  private RegistryOps<JsonElement> conditionOps = null;
 
   private FluidContainerTransferManager() {
     super(GSON, FOLDER);
@@ -83,7 +85,8 @@ public class FluidContainerTransferManager extends SimpleJsonResourceReloadListe
   public void init() {
     NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, AddReloadListenerEvent.class, e -> {
       e.addListener(this);
-      this.context = e.getConditionContext();
+      RegistryAccess registryAccess = e.getRegistryAccess();
+      this.conditionOps = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
     });
     NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, OnDatapackSyncEvent.class, e -> JsonHelper.syncPackets(e, MantleNetwork.INSTANCE, new FluidContainerTransferPacket(this.getContainerItems())));
   }
@@ -92,7 +95,8 @@ public class FluidContainerTransferManager extends SimpleJsonResourceReloadListe
   @Nullable
   private IFluidContainerTransfer loadFluidTransfer(ResourceLocation key, JsonObject json) {
     try {
-      if (!json.has("conditions") || CraftingHelper.processConditions(GsonHelper.getAsJsonArray(json, "conditions"), context)) {
+      // conditions are now embedded in the object under the "neoforge:conditions" key and evaluated via the codec system
+      if (conditionOps == null || ICondition.conditionsMatched(conditionOps, json)) {
         return GSON.fromJson(json, IFluidContainerTransfer.class);
       }
     } catch (JsonSyntaxException e) {

@@ -11,6 +11,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.ResourceLocationException;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.Resource;
@@ -18,9 +19,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.PacketDistributor.PacketTarget;
-import net.neoforged.neoforge.registries.IForgeRegistry;
 import org.jetbrains.annotations.Contract;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.data.loadable.Loadable;
@@ -221,15 +219,15 @@ public class JsonHelper {
    * @deprecated use {@link slimeknights.mantle.data.loadable.Loadables}
    */
   @Deprecated(forRemoval = true)
-  public static <T> T convertToEntry(IForgeRegistry<T> registry, JsonElement element, String key) {
+  public static <T> T convertToEntry(Registry<T> registry, JsonElement element, String key) {
     ResourceLocation name = JsonHelper.convertToResourceLocation(element, key);
     if (registry.containsKey(name)) {
-      T value = registry.getValue(name);
+      T value = registry.get(name);
       if (value != null) {
         return value;
       }
     }
-    throw new JsonSyntaxException("Unknown " + registry.getRegistryName() + " " + name);
+    throw new JsonSyntaxException("Unknown " + registry.key().location() + " " + name);
   }
 
   /**
@@ -243,7 +241,7 @@ public class JsonHelper {
    * @deprecated use {@link slimeknights.mantle.data.loadable.Loadables}
    */
   @Deprecated(forRemoval = true)
-  public static <T> T getAsEntry(IForgeRegistry<T> registry, JsonObject parent, String key) {
+  public static <T> T getAsEntry(Registry<T> registry, JsonObject parent, String key) {
     return convertToEntry(registry, JsonHelper.getElement(parent, key), key);
   }
 
@@ -312,10 +310,9 @@ public class JsonHelper {
 
     // on a dedicated server, the client is running a separate game instance, this is where we send packets, plus fully loaded should already be true
     // this event is not fired when connecting to a server
-    if (!player.connection.connection.isMemoryConnection()) {
-      PacketTarget target = PacketDistributor.PLAYER.with(() -> player);
+    if (!player.connection.getConnection().isMemoryConnection()) {
       for (ISimplePacket packet : packets) {
-        network.send(target, packet);
+        network.sendTo(packet, player);
       }
     }
   }
@@ -372,12 +369,12 @@ public class JsonHelper {
   /** Parses the given JSON element using the passed codec */
   public static <T> T parse(Codec<T> codec, JsonElement json) throws JsonParseException {
     return codec.parse(new Dynamic<>(JsonOps.INSTANCE, json))
-      .getOrThrow(false, Mantle.logger::error);
+      .getOrThrow(JsonParseException::new);
   }
 
   /** Serializes the given object using the passed codec */
   public static <T> JsonElement serialize(Codec<T> codec, T object) {
-    return codec.encodeStart(JsonOps.INSTANCE, object).getOrThrow(false, Mantle.logger::error);
+    return codec.encodeStart(JsonOps.INSTANCE, object).getOrThrow(JsonParseException::new);
   }
 
 

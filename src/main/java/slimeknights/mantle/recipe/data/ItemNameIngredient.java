@@ -1,28 +1,34 @@
 package slimeknights.mantle.recipe.data;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import lombok.RequiredArgsConstructor;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.common.crafting.AbstractIngredient;
-import net.neoforged.neoforge.common.crafting.IIngredientSerializer;
-import net.neoforged.neoforge.common.crafting.VanillaIngredientSerializer;
+import net.minecraft.world.item.Items;
+import net.neoforged.neoforge.common.crafting.ICustomIngredient;
+import net.neoforged.neoforge.common.crafting.IngredientType;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
- * Ingredient for a non-NBT sensitive item from another mod, should never be used outside datagen
+ * Ingredient for a non-NBT sensitive item from another mod, should never be used outside datagen.
+ * <p>
+ * Behavior change for the NeoForge 1.21 port: instead of producing raw JSON via {@code toJson()}, this is now a
+ * {@link ICustomIngredient} and serializes via {@link #TYPE}'s {@link MapCodec}. It only needs to encode (the items
+ * may not exist at datagen time), so decoding is unsupported.
  */
-public class ItemNameIngredient extends AbstractIngredient {
+public class ItemNameIngredient implements ICustomIngredient {
+  /** Ingredient type. Encode-only since the referenced items may not be loaded during datagen. Registered in MantleIngredients. */
+  public static final IngredientType<ItemNameIngredient> TYPE = new IngredientType<>(
+    RecordCodecBuilder.mapCodec(inst -> inst.group(
+      ResourceLocation.CODEC.listOf().fieldOf("items").forGetter(i -> i.names)
+    ).apply(inst, ItemNameIngredient::new)));
+
   private final List<ResourceLocation> names;
   protected ItemNameIngredient(List<ResourceLocation> names) {
-    super(names.stream().map(NamedValue::new));
     this.names = names;
   }
 
@@ -37,27 +43,17 @@ public class ItemNameIngredient extends AbstractIngredient {
   }
 
   @Override
-  public boolean test(@Nullable ItemStack stack) {
+  public boolean test(ItemStack stack) {
     throw new UnsupportedOperationException();
   }
 
-  /** Creates a JSON object for a name */
-  private static JsonObject forName(ResourceLocation name) {
-    JsonObject json = new JsonObject();
-    json.addProperty("item", name.toString());
-    return json;
-  }
-
   @Override
-  public JsonElement toJson() {
-    if (names.size() == 1) {
-      return forName(names.get(0));
-    }
-    JsonArray array = new JsonArray();
-    for (ResourceLocation name : names) {
-      array.add(forName(name));
-    }
-    return array;
+  public Stream<ItemStack> getItems() {
+    // datagen-only; return the items that happen to resolve so the ingredient is not considered empty
+    return names.stream()
+                .map(BuiltInRegistries.ITEM::get)
+                .filter(item -> item != Items.AIR)
+                .map(ItemStack::new);
   }
 
   @Override
@@ -66,24 +62,17 @@ public class ItemNameIngredient extends AbstractIngredient {
   }
 
   @Override
-  public IIngredientSerializer<? extends Ingredient> getSerializer() {
-    return VanillaIngredientSerializer.INSTANCE;
+  public IngredientType<?> getType() {
+    return TYPE;
   }
 
-  @RequiredArgsConstructor
-  public static class NamedValue implements Ingredient.Value {
-    private final ResourceLocation name;
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof ItemNameIngredient other && names.equals(other.names);
+  }
 
-    @Override
-    public Collection<ItemStack> getItems() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public JsonObject serialize() {
-      JsonObject json = new JsonObject();
-      json.addProperty("item", name.toString());
-      return json;
-    }
+  @Override
+  public int hashCode() {
+    return names.hashCode();
   }
 }

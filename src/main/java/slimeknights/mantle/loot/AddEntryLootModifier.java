@@ -1,10 +1,8 @@
 package slimeknights.mantle.loot;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
@@ -24,7 +22,7 @@ import java.util.function.Consumer;
 
 /** Loot modifier to inject an additional loot entry into an existing table */
 public class AddEntryLootModifier extends LootModifier {
-  public static final Codec<AddEntryLootModifier> CODEC = RecordCodecBuilder.create(inst -> codecStart(inst).and(inst.group(
+  public static final MapCodec<AddEntryLootModifier> CODEC = RecordCodecBuilder.mapCodec(inst -> codecStart(inst).and(inst.group(
     ILootModifierCondition.CODEC.listOf().fieldOf("post_conditions").forGetter(m -> m.modifierConditions),
     MantleCodecs.LOOT_ENTRY.fieldOf("entry").forGetter(m -> m.entry),
     MantleCodecs.LOOT_FUNCTIONS.fieldOf("functions").forGetter(m -> m.functions))).apply(inst, AddEntryLootModifier::new));
@@ -43,7 +41,7 @@ public class AddEntryLootModifier extends LootModifier {
     this.modifierConditions = modifierConditions;
     this.entry = entry;
 		this.functions = functions;
-		this.combinedFunctions = LootItemFunctions.compose(functions);
+		this.combinedFunctions = LootItemFunctions.compose(List.of(functions));
 	}
 
   /** Creates a builder for this loot modifier */
@@ -72,16 +70,19 @@ public class AddEntryLootModifier extends LootModifier {
 	}
 
   @Override
-  public Codec<? extends IGlobalLootModifier> codec() {
+  public MapCodec<? extends IGlobalLootModifier> codec() {
     return CODEC;
   }
 
   /** Builder for a conditional loot entry */
-  @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Builder extends AbstractLootModifierBuilder<Builder> {
     private final List<ILootModifierCondition> modifierConditions = new ArrayList<>();
     private final LootPoolEntryContainer entry;
     private final List<LootItemFunction> functions = new ArrayList<>();
+
+    private Builder(LootPoolEntryContainer entry) {
+      this.entry = entry;
+    }
 
     /**
      * Adds a loot entry condition to the builder

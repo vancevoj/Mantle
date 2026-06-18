@@ -13,7 +13,7 @@ public interface IEarlySafeManagerReloadListener extends PreparableReloadListene
   @Override
   default CompletableFuture<Void> reload(PreparationBarrier stage, ResourceManager resourceManager, ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler, Executor backgroundExecutor, Executor gameExecutor) {
     return CompletableFuture.runAsync(() -> {
-      if (ModLoader.isLoadingStateValid()) {
+      if (!ModLoader.hasErrors()) {
         onReloadSafe(resourceManager);
       }
     }, backgroundExecutor).thenCompose(stage::wait);

@@ -1,7 +1,7 @@
 package slimeknights.mantle.fluid.transfer;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
@@ -10,8 +10,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition;
+import net.neoforged.neoforge.common.conditions.ICondition;
 import slimeknights.mantle.data.GenericDataProvider;
 import slimeknights.mantle.recipe.helper.FluidOutput;
 import slimeknights.mantle.recipe.helper.ItemOutput;
@@ -19,6 +18,7 @@ import slimeknights.mantle.recipe.ingredient.FluidIngredient;
 import slimeknights.mantle.registration.object.FluidObject;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -100,11 +100,8 @@ public abstract class AbstractFluidContainerTransferProvider extends GenericData
       JsonElement element = FluidContainerTransferManager.GSON.toJsonTree(transfer, IFluidContainerTransfer.class);
       assert element.isJsonObject();
       if (conditions.length != 0) {
-        JsonArray array = new JsonArray();
-        for (ICondition condition : conditions) {
-          array.add(CraftingHelper.serialize(condition));
-        }
-        element.getAsJsonObject().add("conditions", array);
+        // conditions are written under the "neoforge:conditions" key via the codec system
+        ICondition.writeConditions(JsonOps.INSTANCE, element.getAsJsonObject(), List.of(conditions));
       }
       return element;
     }

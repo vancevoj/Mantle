@@ -53,7 +53,7 @@ public class FluidTooltipHandler extends SimpleJsonResourceReloadListener {
   public static final Gson GSON = (new GsonBuilder())
     .registerTypeAdapter(ResourceLocation.class, new ResourceLocation.Serializer())
     .registerTypeAdapter(FluidIngredient.class, FluidIngredient.LOADABLE)
-    .registerTypeAdapter(TagKey.class, new TagKeySerializer<>(Registries.FLUID))
+    .registerTypeAdapter(TagKey.class, new TagKeySerializer<Fluid>(Registries.FLUID))
     .setPrettyPrinting()
     .disableHtmlEscaping()
     .create();

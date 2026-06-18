@@ -1,5 +1,6 @@
 package slimeknights.mantle.plugin.jei;
 
+// TODO(neoport): JEI dep disabled
 import mezz.jei.api.gui.ingredient.ICraftingGridHelper;
 import mezz.jei.api.ingredients.IIngredientType;
 import slimeknights.mantle.recipe.ingredient.EntityIngredient.EntityInput;

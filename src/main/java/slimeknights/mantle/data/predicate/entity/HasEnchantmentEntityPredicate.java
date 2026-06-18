@@ -1,5 +1,6 @@
 package slimeknights.mantle.data.predicate.entity;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -14,7 +15,8 @@ public record HasEnchantmentEntityPredicate(Enchantment enchantment) implements 
 
   @Override
   public boolean matches(LivingEntity entity) {
-    return EnchantmentHelper.getEnchantmentLevel(enchantment, entity) > 0;
+    // enchantments are a dynamic registry in 1.21, so resolve the holder via the entity's registry access
+    return EnchantmentHelper.getEnchantmentLevel(entity.level().registryAccess().registryOrThrow(Registries.ENCHANTMENT).wrapAsHolder(enchantment), entity) > 0;
   }
 
   @Override

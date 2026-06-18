@@ -6,7 +6,6 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -18,7 +17,6 @@ import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.commands.CommandRuntimeException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
@@ -29,6 +27,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import org.apache.commons.lang3.text.WordUtils;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.lwjgl.opengl.GL11;
 import slimeknights.mantle.Mantle;
 import slimeknights.mantle.client.book.BookLoader;
@@ -186,10 +185,10 @@ public class BookCommand {
     if (bookData != null) {
       // ensure outputs exist
       if (!screenshotDir.toFile().mkdirs() && !screenshotDir.toFile().exists()) {
-        throw new CommandRuntimeException(Component.translatable(EXPORT_FAIL_IO, screenshotDir));
+        throw new RuntimeException(Component.translatable(EXPORT_FAIL_IO, screenshotDir).getString());
       }
       if (htmlDir != null && !htmlDir.toFile().mkdirs() && !htmlDir.toFile().exists()) {
-        throw new CommandRuntimeException(Component.translatable(EXPORT_FAIL_IO, htmlDir));
+        throw new RuntimeException(Component.translatable(EXPORT_FAIL_IO, htmlDir).getString());
       }
 
       int width = BookScreen.PAGE_WIDTH_UNSCALED * 2 * scale;
@@ -207,9 +206,9 @@ public class BookCommand {
       Matrix4f matrix = (new Matrix4f()).setOrtho(0.0F, width, height, 0.0F, 1000.0F, zFar);
       RenderSystem.setProjectionMatrix(matrix, VertexSorting.ORTHOGRAPHIC_Z);
 
-      PoseStack stack = RenderSystem.getModelViewStack();
-      stack.pushPose();
-      stack.setIdentity();
+      Matrix4fStack stack = RenderSystem.getModelViewStack();
+      stack.pushMatrix();
+      stack.identity();
       stack.translate(0, 0, 1000F - zFar);
       stack.scale(scale, scale, 1);
       RenderSystem.applyModelViewMatrix();
@@ -268,14 +267,14 @@ public class BookCommand {
                 scaled.writeToFile(path);
               } catch (Exception e) {
                 Mantle.logger.error("Failed to save screenshot", e);
-                throw new CommandRuntimeException(Component.translatable(EXPORT_FAIL));
+                throw new RuntimeException(Component.translatable(EXPORT_FAIL).getString());
               }
             } else {
               image.writeToFile(path);
             }
           } catch (Exception e) {
             Mantle.logger.error("Failed to save screenshot", e);
-            throw new CommandRuntimeException(Component.translatable(EXPORT_FAIL));
+            throw new RuntimeException(Component.translatable(EXPORT_FAIL).getString());
           }
 
           if (html) {
@@ -284,7 +283,7 @@ public class BookCommand {
               writer.write(page < 0 ? screen.coverToHtml(bookKey, exportTitle, VERSION_FULL, modName) : screen.pageToHtml(bookKey, exportTitle, VERSION_FULL, modName));
             } catch (IOException e) {
               Mantle.logger.error("Failed to export HTML", e);
-              throw new CommandRuntimeException(Component.translatable(EXPORT_FAIL));
+              throw new RuntimeException(Component.translatable(EXPORT_FAIL).getString());
             }
           }
         } while (screen.nextPage());
@@ -296,11 +295,11 @@ public class BookCommand {
             writer.write(galleryHtml(bookKey, exportTitle, modName));
           } catch (IOException e) {
             Mantle.logger.error("Failed to export HTML", e);
-            throw new CommandRuntimeException(Component.translatable(EXPORT_FAIL));
+            throw new RuntimeException(Component.translatable(EXPORT_FAIL).getString());
           }
         }
       } finally {
-        stack.popPose();
+        stack.popMatrix();
         RenderSystem.applyModelViewMatrix();
         RenderSystem.defaultBlendFunc();
         target.unbindWrite();

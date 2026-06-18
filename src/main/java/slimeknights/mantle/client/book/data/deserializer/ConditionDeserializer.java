@@ -4,8 +4,8 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition;
+import com.mojang.serialization.JsonOps;
+import net.neoforged.neoforge.common.conditions.ICondition;
 
 import java.lang.reflect.Type;
 
@@ -15,6 +15,7 @@ public class ConditionDeserializer implements JsonDeserializer<ICondition> {
     if(!json.isJsonObject())
       throw new JsonParseException("A condition must be a JSON Object");
 
-    return CraftingHelper.getCondition(json.getAsJsonObject());
+    // conditions are codec based in NeoForge 1.21, decode the object through the registered condition codec
+    return ICondition.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(JsonParseException::new);
   }
 }

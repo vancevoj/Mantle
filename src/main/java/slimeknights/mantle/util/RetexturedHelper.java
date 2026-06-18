@@ -4,10 +4,12 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -61,7 +63,11 @@ public final class RetexturedHelper {
    * @return  Texture, or empty string if none
    */
   public static String getTextureName(ItemStack stack) {
-    return getTextureName(stack.getTag());
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    if (data == null) {
+      return "";
+    }
+    return getTextureName(data.copyTag());
   }
 
   /**
@@ -127,11 +133,9 @@ public final class RetexturedHelper {
    * @return The item stack with the proper NBT
    */
   public static ItemStack setTexture(ItemStack stack, String name) {
-    if (!name.isEmpty()) {
-      setTexture(stack.getOrCreateTag(), name);
-    } else if (stack.hasTag()) {
-      setTexture(stack.getTag(), name);
-    }
+    // CustomData.update mutates a copy of the CUSTOM_DATA tag, then either stores it or removes the
+    // component if the result is empty (so passing an empty name clears the texture entry)
+    CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> setTexture(tag, name));
     return stack;
   }
 

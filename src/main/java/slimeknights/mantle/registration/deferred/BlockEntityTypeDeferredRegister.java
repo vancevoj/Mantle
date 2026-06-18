@@ -44,7 +44,7 @@ public class BlockEntityTypeDeferredRegister extends DeferredRegisterWrapper<Blo
    * @return  Registry object instance
    */
   @SuppressWarnings("ConstantConditions")
-  public <T extends BlockEntity> DeferredHolder<?, BlockEntityType<T>> register(String name, BlockEntitySupplier<? extends T> factory, Supplier<? extends Block> block) {
+  public <T extends BlockEntity> DeferredHolder<? super BlockEntityType<T>, BlockEntityType<T>> register(String name, BlockEntitySupplier<? extends T> factory, Supplier<? extends Block> block) {
     return register.register(name, () ->  BlockEntityType.Builder.<T>of(factory, block.get()).build(getType(name)));
   }
 
@@ -57,7 +57,7 @@ public class BlockEntityTypeDeferredRegister extends DeferredRegisterWrapper<Blo
    * @return  Tile entity type registry object
    */
   @SuppressWarnings("ConstantConditions")
-  public <T extends BlockEntity> DeferredHolder<?, BlockEntityType<T>> register(String name, BlockEntitySupplier<? extends T> factory, EnumObject<?, ? extends Block> blocks) {
+  public <T extends BlockEntity> DeferredHolder<? super BlockEntityType<T>, BlockEntityType<T>> register(String name, BlockEntitySupplier<? extends T> factory, EnumObject<?, ? extends Block> blocks) {
     return register.register(name, () ->  new BlockEntityType<>(factory, ImmutableSet.copyOf(blocks.values()), getType(name)));
   }
 
@@ -70,7 +70,7 @@ public class BlockEntityTypeDeferredRegister extends DeferredRegisterWrapper<Blo
    * @return  Tile entity type registry object
    */
   @SuppressWarnings("ConstantConditions")
-  public <T extends BlockEntity> DeferredHolder<?, BlockEntityType<T>> register(String name, BlockEntitySupplier<? extends T> factory, Consumer<ImmutableSet.Builder<Block>> blockCollector) {
+  public <T extends BlockEntity> DeferredHolder<? super BlockEntityType<T>, BlockEntityType<T>> register(String name, BlockEntitySupplier<? extends T> factory, Consumer<ImmutableSet.Builder<Block>> blockCollector) {
     return register.register(name, () ->  {
       ImmutableSet.Builder<Block> blocks = ImmutableSet.builder();
       blockCollector.accept(blocks);

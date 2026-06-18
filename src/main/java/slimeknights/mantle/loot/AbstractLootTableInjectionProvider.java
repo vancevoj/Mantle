@@ -1,12 +1,12 @@
 package slimeknights.mantle.loot;
 
 import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition;
+import net.neoforged.neoforge.common.conditions.ICondition;
 import slimeknights.mantle.data.GenericDataProvider;
 
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ public abstract class AbstractLootTableInjectionProvider extends GenericDataProv
     return allOf(builders.stream().map(builder -> {
       JsonObject json = LootTableInjection.LOADABLE.serialize(builder.build()).getAsJsonObject();
       if (builder.conditions.length > 0) {
-        json.add("conditions", CraftingHelper.serialize(builder.conditions));
+        ICondition.writeConditions(JsonOps.INSTANCE, json, List.of(builder.conditions));
       }
       return saveJson(output, ResourceLocation.fromNamespaceAndPath(domain, builder.path), json);
     }));
@@ -53,12 +53,12 @@ public abstract class AbstractLootTableInjectionProvider extends GenericDataProv
 
   /** Creates a new injection for the Minecraft domain */
   protected LootTableInjection.Builder injectChest(String name, ICondition... conditions) {
-    return inject(name, new ResourceLocation("chests/" + name), conditions);
+    return inject(name, ResourceLocation.withDefaultNamespace("chests/" + name), conditions);
   }
 
   /** Creates a new injection for the Minecraft domain */
   protected LootTableInjection.Builder injectGameplay(String name, ICondition... conditions) {
-    return inject(name, new ResourceLocation("gameplay/" + name), conditions);
+    return inject(name, ResourceLocation.withDefaultNamespace("gameplay/" + name), conditions);
   }
 
   /** Internal builder tuple */

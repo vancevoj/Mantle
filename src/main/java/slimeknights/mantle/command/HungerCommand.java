@@ -5,7 +5,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -32,7 +31,6 @@ public class HungerCommand {
   }
 
   /** List of each operation to run */
-  @RequiredArgsConstructor
   private enum Operation {
     SET(20) {
       @Override
@@ -58,6 +56,10 @@ public class HungerCommand {
     private final String name = this.name().toLowerCase(Locale.ROOT);
     /** Saturation used if its unset */
     private final float defaultSaturation;
+
+    Operation(float defaultSaturation) {
+      this.defaultSaturation = defaultSaturation;
+    }
 
     /** Registers this argument with the builder */
     public void register(LiteralArgumentBuilder<CommandSourceStack> subCommand) {

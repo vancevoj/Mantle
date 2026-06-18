@@ -1,6 +1,7 @@
 package slimeknights.mantle.plugin.jei;
 
 import com.google.common.collect.Streams;
+// TODO(neoport): JEI dep disabled
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
@@ -59,7 +60,7 @@ public class RetexturableRecipeExtension implements ICraftingCategoryExtension {
       return false;
     }
     for (int i = 0; i < leftStacks.length; i++) {
-      if (!ItemStack.isSameItemSameTags(leftStacks[i], rightStacks[i])) {
+      if (!ItemStack.isSameItemSameComponents(leftStacks[i], rightStacks[i])) {
         return false;
       }
     }

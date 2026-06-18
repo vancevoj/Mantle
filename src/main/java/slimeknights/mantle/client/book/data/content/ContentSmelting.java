@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import org.apache.commons.lang3.StringUtils;
@@ -98,10 +99,10 @@ public class ContentSmelting extends PageContent {
   public void load() {
     super.load();
 
-    if (!StringUtils.isEmpty(this.recipe) && ResourceLocation.isValidResourceLocation(this.recipe)) {
+    if (!StringUtils.isEmpty(this.recipe) && ResourceLocation.tryParse(this.recipe) != null) {
       Level level = Minecraft.getInstance().level;
       assert level != null;
-      Recipe<?> recipe = level.getRecipeManager().byKey(ResourceLocation.parse(this.recipe)).orElse(null);
+      Recipe<?> recipe = level.getRecipeManager().byKey(ResourceLocation.parse(this.recipe)).map(RecipeHolder::value).orElse(null);
 
       if (recipe instanceof AbstractCookingRecipe) {
         this.input = IngredientData.getItemStackData(NonNullList.of(ItemStack.EMPTY, recipe.getIngredients().get(0).getItems()));

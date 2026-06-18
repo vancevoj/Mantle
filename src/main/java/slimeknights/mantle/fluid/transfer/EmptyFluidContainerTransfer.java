@@ -18,9 +18,9 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.Mantle;
+import slimeknights.mantle.data.loadable.common.IngredientLoadable;
 import slimeknights.mantle.recipe.helper.FluidOutput;
 import slimeknights.mantle.recipe.helper.ItemOutput;
-import slimeknights.mantle.util.JsonHelper;
 
 import java.lang.reflect.Type;
 import java.util.function.Consumer;
@@ -81,11 +81,13 @@ public class EmptyFluidContainerTransfer implements IFluidContainerTransfer.With
   public JsonObject serialize(JsonSerializationContext context) {
     JsonObject json = new JsonObject();
     json.addProperty("type", ID.toString());
-    json.add("input", input.toJson());
+    json.add("input", IngredientLoadable.DISALLOW_EMPTY.serialize(input));
     if (!result.isEmpty()) {
       json.add("result", result.serialize(false));
     }
-    json.add("fluid", FluidOutput.Loadable.REQUIRED.serialize(fluid));
+    JsonObject fluidJson = new JsonObject();
+    FluidOutput.Loadable.REQUIRED.serialize(fluid, fluidJson);
+    json.add("fluid", fluidJson);
     return json;
   }
 
@@ -109,7 +111,7 @@ public class EmptyFluidContainerTransfer implements IFluidContainerTransfer.With
     @Override
     public T deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
       JsonObject json = element.getAsJsonObject();
-      Ingredient input = Ingredient.fromJson(JsonHelper.getElement(json, "input"));
+      Ingredient input = IngredientLoadable.DISALLOW_EMPTY.getIfPresent(json, "input");
       ItemOutput result = getResult(json);
       FluidOutput fluid = FluidOutput.Loadable.REQUIRED.getIfPresent(json, "fluid");
       return factory.apply(input, result, fluid);

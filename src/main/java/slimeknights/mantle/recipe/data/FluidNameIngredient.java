@@ -1,6 +1,5 @@
 package slimeknights.mantle.recipe.data;
 
-import lombok.RequiredArgsConstructor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -13,7 +12,6 @@ import slimeknights.mantle.recipe.ingredient.FluidIngredient;
 import java.util.List;
 
 /** Datagen fluid ingredient to create an ingredient matching a fluid from another mod, should not be used outside datagen */
-@RequiredArgsConstructor(staticName = "of")
 public class FluidNameIngredient extends FluidIngredient {
   private static final RecordLoadable<FluidNameIngredient> LOADABLE = RecordLoadable.create(
     Loadables.RESOURCE_LOCATION.requiredField("fluid", i -> i.fluidName),
@@ -22,6 +20,16 @@ public class FluidNameIngredient extends FluidIngredient {
 
   private final ResourceLocation fluidName;
   private final int amount;
+
+  private FluidNameIngredient(ResourceLocation fluidName, int amount) {
+    this.fluidName = fluidName;
+    this.amount = amount;
+  }
+
+  /** Creates a new ingredient matching the given fluid name and amount */
+  public static FluidNameIngredient of(ResourceLocation fluidName, int amount) {
+    return new FluidNameIngredient(fluidName, amount);
+  }
 
   @Override
   public Loadable<FluidNameIngredient> loadable() {

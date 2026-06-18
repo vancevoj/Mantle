@@ -7,7 +7,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -145,10 +144,13 @@ public record ResourceOrTagKeyArgument<T>(@Nullable ResourceKey<? extends Regist
       return new Template(argument.registry);
     }
 
-    @RequiredArgsConstructor
     public class Template implements ArgumentTypeInfo.Template<ResourceOrTagKeyArgument<T>> {
       @Nullable
       private final ResourceKey<? extends Registry<T>> registry;
+
+      public Template(@Nullable ResourceKey<? extends Registry<T>> registry) {
+        this.registry = registry;
+      }
 
       @Override
       public ResourceOrTagKeyArgument<T> instantiate(CommandBuildContext commandBuildContext) {

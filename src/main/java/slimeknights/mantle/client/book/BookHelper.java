@@ -1,10 +1,11 @@
 package slimeknights.mantle.client.book;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.nbt.CompoundTag;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 public class BookHelper {
 
@@ -22,8 +23,8 @@ public class BookHelper {
    */
   public static String getCurrentSavedPage(@Nullable ItemStack item) {
     if (item != null) {
-      if (!item.isEmpty() && item.hasTag()) {
-        CompoundTag bookNBT = item.getOrCreateTag().getCompound(BOOK_COMPOUND).getCompound(BOOK_DATA_COMPOUND);
+      if (!item.isEmpty() && item.has(DataComponents.CUSTOM_DATA)) {
+        CompoundTag bookNBT = item.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound(BOOK_COMPOUND).getCompound(BOOK_DATA_COMPOUND);
 
         if (bookNBT.contains(NBT_CURRENT_PAGE, 8)) {
           return bookNBT.getString(NBT_CURRENT_PAGE);
@@ -41,15 +42,14 @@ public class BookHelper {
    * @param currentPage the current open page
    */
   public static void writeSavedPageToBook(ItemStack stack, String currentPage) {
-    CompoundTag compoundNBT = stack.getOrCreateTag();
+    CustomData.update(DataComponents.CUSTOM_DATA, stack, compoundNBT -> {
+      CompoundTag mantleCompound = compoundNBT.getCompound(BOOK_COMPOUND);
+      CompoundTag bookCompound = mantleCompound.getCompound(BOOK_DATA_COMPOUND);
 
-    CompoundTag mantleCompound = compoundNBT.getCompound(BOOK_COMPOUND);
-    CompoundTag bookCompound = compoundNBT.getCompound(BOOK_DATA_COMPOUND);
+      bookCompound.putString(NBT_CURRENT_PAGE, currentPage);
 
-    bookCompound.putString(NBT_CURRENT_PAGE, currentPage);
-
-    mantleCompound.put(BOOK_DATA_COMPOUND, bookCompound);
-    compoundNBT.put(BOOK_COMPOUND, mantleCompound);
-    stack.setTag(compoundNBT);
+      mantleCompound.put(BOOK_DATA_COMPOUND, bookCompound);
+      compoundNBT.put(BOOK_COMPOUND, mantleCompound);
+    });
   }
 }

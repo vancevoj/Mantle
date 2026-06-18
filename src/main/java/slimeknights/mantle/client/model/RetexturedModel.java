@@ -69,9 +69,9 @@ public class RetexturedModel implements IUnbakedGeometry<RetexturedModel> {
   }
 
   @Override
-  public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material,TextureAtlasSprite> spriteGetter, ModelState transform, ItemOverrides overrides, ResourceLocation location) {
+  public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material,TextureAtlasSprite> spriteGetter, ModelState transform, ItemOverrides overrides) {
     // bake the model and return
-    BakedModel baked = model.bake(owner, baker, spriteGetter, transform, overrides, location);
+    BakedModel baked = model.bake(owner, baker, spriteGetter, transform, overrides);
     return new Baked(baked, owner, model, transform, getAllRetextured(owner, this.model, retextured));
   }
 
@@ -205,11 +205,11 @@ public class RetexturedModel implements IUnbakedGeometry<RetexturedModel> {
       @Nullable
       @Override
       public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel world, @Nullable LivingEntity entity, int pSeed) {
-        if (stack.isEmpty() || !stack.hasTag()) {
+        if (stack.isEmpty()) {
           return originalModel;
         }
 
-        // get the block first, ensuring its valid
+        // get the block first, ensuring its valid; getTexture returns AIR when no texture is stored
         Block block = RetexturedHelper.getTexture(stack);
         if (block == Blocks.AIR) {
           return originalModel;

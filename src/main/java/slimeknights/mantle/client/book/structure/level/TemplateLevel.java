@@ -10,9 +10,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.profiling.InactiveProfiler;
+import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -26,6 +28,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.GameEvent.Context;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
@@ -45,9 +48,10 @@ import java.util.function.Predicate;
  */
 public class TemplateLevel extends Level {
 
-  private final Map<String, MapItemSavedData> maps = new HashMap<>();
+  private final Map<MapId, MapItemSavedData> maps = new HashMap<>();
   private final Scoreboard scoreboard = new Scoreboard();
-  private final RecipeManager recipeManager = new RecipeManager();
+  private final TickRateManager tickRateManager = new TickRateManager();
+  private final RecipeManager recipeManager;
   private final TemplateChunkSource chunkSource;
 
   public TemplateLevel(List<StructureBlockInfo> blocks, Predicate<BlockPos> shouldShow) {
@@ -57,6 +61,8 @@ public class TemplateLevel extends Level {
       () -> InactiveProfiler.INSTANCE, true, false, 0, 0
     );
 
+    // RecipeManager now requires a registry lookup, reuse the client level's registries
+    this.recipeManager = new RecipeManager(Objects.requireNonNull(Minecraft.getInstance().level).registryAccess());
     this.chunkSource = new TemplateChunkSource(blocks, this, shouldShow);
   }
 
@@ -82,19 +88,35 @@ public class TemplateLevel extends Level {
 
   @Nullable
   @Override
-  public MapItemSavedData getMapData(@Nonnull String mapName) {
+  public MapItemSavedData getMapData(@Nonnull MapId mapName) {
     return this.maps.get(mapName);
   }
 
   @Override
-  public void setMapData(String mapId, MapItemSavedData mapDataIn) {
+  public void setMapData(MapId mapId, MapItemSavedData mapDataIn) {
     this.maps.put(mapId, mapDataIn);
   }
 
   @Override
-  public int getFreeMapId() {
-    return this.maps.size();
+  public MapId getFreeMapId() {
+    return new MapId(this.maps.size());
   }
+
+  @Override
+  public float getDayTimeFraction() {
+    return 0;
+  }
+
+  @Override
+  public void setDayTimeFraction(float dayTimeFraction) {}
+
+  @Override
+  public float getDayTimePerTick() {
+    return 0;
+  }
+
+  @Override
+  public void setDayTimePerTick(float dayTimePerTick) {}
 
   @Override
   public void destroyBlockProgress(int breakerId, @Nonnull BlockPos pos, int progress) {}
@@ -109,6 +131,18 @@ public class TemplateLevel extends Level {
   @Override
   public RecipeManager getRecipeManager() {
     return this.recipeManager;
+  }
+
+  @Nonnull
+  @Override
+  public PotionBrewing potionBrewing() {
+    return PotionBrewing.EMPTY;
+  }
+
+  @Nonnull
+  @Override
+  public TickRateManager tickRateManager() {
+    return this.tickRateManager;
   }
 
   @Override
@@ -138,7 +172,7 @@ public class TemplateLevel extends Level {
   public void levelEvent(@Nullable Player player, int type, @Nonnull BlockPos pos, int data) {}
 
   @Override
-  public void gameEvent(GameEvent pEvent, Vec3 pPosition, Context pContext) {}
+  public void gameEvent(Holder<GameEvent> pEvent, Vec3 pPosition, Context pContext) {}
 
   @Override
   public FeatureFlagSet enabledFeatures() {

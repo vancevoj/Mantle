@@ -8,8 +8,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition.IContext;
+import net.neoforged.neoforge.common.conditions.ICondition.IContext;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import net.neoforged.bus.api.EventPriority;
@@ -58,7 +57,11 @@ public enum LootTableInjector implements IEarlyReloadListener {
         JsonObject json = GsonHelper.fromJson(JsonHelper.DEFAULT_GSON, reader, JsonObject.class);
         if (json != null) {
           // skip if empty for easy removals
-          if (!json.keySet().isEmpty() && CraftingHelper.processConditions(json, "conditions", context)) {
+          // TODO(neoport): condition gating used Forge's CraftingHelper.processConditions(json, "conditions", context), which is gone.
+          // NeoForge 1.21 conditions are codec based (ICondition.conditionsMatched) and require a ConditionalOps built from
+          // RegistryOps, which is not available in this resource-manager-only reload callback. For now injectors always load;
+          // wire registry access through here to restore condition gating.
+          if (!json.keySet().isEmpty()) {
             // the builder allows us to merge from multiple sources, for efficiency
             // ensures a given table name and pool name both show just once
             LootTableInjection injection = LootTableInjection.LOADABLE.deserialize(json);

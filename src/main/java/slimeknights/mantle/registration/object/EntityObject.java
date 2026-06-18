@@ -20,7 +20,7 @@ public class EntityObject<T extends Entity> implements Supplier<EntityType<T>>, 
   private final Supplier<? extends EntityType<T>> type;
   private final Supplier<? extends SpawnEggItem> spawnEgg;
 
-  public EntityObject(DeferredHolder<?, ? extends EntityType<T>> type, Supplier<? extends SpawnEggItem> spawnEgg) {
+  public EntityObject(DeferredHolder<? super EntityType<T>, ? extends EntityType<T>> type, Supplier<? extends SpawnEggItem> spawnEgg) {
     this.id = type.getId();
     this.type = type;
     this.spawnEgg = spawnEgg;

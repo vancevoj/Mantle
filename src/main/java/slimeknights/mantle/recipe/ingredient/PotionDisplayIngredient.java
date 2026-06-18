@@ -1,31 +1,26 @@
 package slimeknights.mantle.recipe.ingredient;
 
-import com.google.gson.JsonElement;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.alchemy.PotionUtils;
-import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.common.crafting.IIngredientSerializer;
+import net.neoforged.neoforge.common.crafting.IngredientType;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.mantle.recipe.helper.LoadableIngredientSerializer;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 /** Ingredient that shows all potion variants on the displayed item list */
 public class PotionDisplayIngredient extends ItemIngredient {
-  /** Ingredient serializer instance */
-  public static final LoadableIngredientSerializer<PotionDisplayIngredient> SERIALIZER = new LoadableIngredientSerializer<>(RecordLoadable.create(ItemsField.INSTANCE, TAG_FIELD, PotionDisplayIngredient::new));
-
-  /** last return of {@link Ingredient#getItems()} */
-  private ItemStack[] lastParentStacks = null;
-  /** cache for {@link #getItems()} */
-  private ItemStack[] displayStacks = null;
+  /** Loadable for parsing and serializing this ingredient */
+  public static final RecordLoadable<PotionDisplayIngredient> LOADABLE = RecordLoadable.create(ItemsField.INSTANCE, TAG_FIELD, PotionDisplayIngredient::new);
+  /** Ingredient type instance, registered by {@link MantleIngredients} */
+  public static final IngredientType<PotionDisplayIngredient> TYPE = new LoadableIngredientSerializer<>(LOADABLE).type();
 
   protected PotionDisplayIngredient(List<Item> items, @Nullable TagKey<Item> tag) {
     super(items, tag);
@@ -52,26 +47,19 @@ public class PotionDisplayIngredient extends ItemIngredient {
   }
 
   @Override
-  public ItemStack[] getItems() {
-    // if empty, means we want wildcard, show all potions on the stack
-    ItemStack[] parentStacks = super.getItems();
-    if (lastParentStacks != parentStacks) {
-      lastParentStacks = parentStacks;
-      displayStacks = BuiltInRegistries.POTION.stream()
-        .filter(pot -> pot != Potions.EMPTY)
-        .flatMap(pot -> Arrays.stream(parentStacks).map(item -> PotionUtils.setPotion(item.copy(), pot)))
-        .toArray(ItemStack[]::new);
-    }
-    return displayStacks;
+  public Stream<ItemStack> getItems() {
+    // show every registered potion on each matched item (1.21 has no empty potion to skip)
+    List<ItemStack> parentStacks = super.getItems().toList();
+    return BuiltInRegistries.POTION.holders()
+      .flatMap(potion -> parentStacks.stream().map(item -> {
+        ItemStack copy = item.copy();
+        copy.set(DataComponents.POTION_CONTENTS, new PotionContents(potion));
+        return copy;
+      }));
   }
 
   @Override
-  public IIngredientSerializer<? extends Ingredient> getSerializer() {
-    return SERIALIZER;
-  }
-
-  @Override
-  public JsonElement toJson() {
-    return SERIALIZER.serialize(this);
+  public IngredientType<?> getType() {
+    return TYPE;
   }
 }

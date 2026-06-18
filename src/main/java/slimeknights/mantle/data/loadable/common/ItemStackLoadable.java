@@ -3,11 +3,13 @@ package slimeknights.mantle.data.loadable.common;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.netty.handler.codec.EncoderException;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import slimeknights.mantle.data.loadable.ErrorFactory;
 import slimeknights.mantle.data.loadable.Loadable;
 import slimeknights.mantle.data.loadable.Loadables;
@@ -42,7 +44,7 @@ public class ItemStackLoadable {
   /** Field for item stack count that allows empty */
   private static final LoadableField<Integer,ItemStack> COUNT = IntLoadable.FROM_ZERO.defaultField("count", 1, true, ItemStack::getCount);
   /** Field for item stack count that allows empty */
-  private static final LoadableField<CompoundTag,ItemStack> NBT = NBTLoadable.ALLOW_STRING.nullableField("nbt", ItemStack::getTag);
+  private static final LoadableField<CompoundTag,ItemStack> NBT = NBTLoadable.ALLOW_STRING.nullableField("nbt", ItemStackLoadable::getTag);
 
 
   /* Optional */
@@ -75,10 +77,24 @@ public class ItemStackLoadable {
       return ItemStack.EMPTY;
     }
     ItemStack stack = new ItemStack(item, count);
-    if (nbt != null) {
-      stack.setTag(nbt);
+    // NBT on a stack is stored as the custom data component since 1.20.5
+    if (nbt != null && !nbt.isEmpty()) {
+      stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
     }
     return stack;
+  }
+
+  /** Gets the custom data NBT from a stack, or null if absent */
+  @Nullable
+  private static CompoundTag getTag(ItemStack stack) {
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    return data == null ? null : data.copyTag();
+  }
+
+  /** Checks if a stack has custom data NBT */
+  private static boolean hasTag(ItemStack stack) {
+    CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+    return data != null && !data.isEmpty();
   }
 
   /** Creates a non-empty variant of the loadable */
@@ -132,7 +148,7 @@ public class ItemStackLoadable {
 
     @Override
     public JsonElement serialize(ItemStack stack) {
-      if ((this == FIXED_COUNT || stack.getCount() == 1) && !stack.hasTag()) {
+      if ((this == FIXED_COUNT || stack.getCount() == 1) && !hasTag(stack)) {
         return OPTIONAL_ITEM.serialize(stack);
       }
       return RecordLoadable.super.serialize(stack);
@@ -143,20 +159,14 @@ public class ItemStackLoadable {
 
     @Override
     public ItemStack decode(FriendlyByteBuf buffer, TypedMap context) {
-      // not using makeItemStack as we need to set the share tag NBT here
       Item item = ITEM.decode(buffer, context);
       int count = 1;
       if (this == READ_COUNT) {
         count = COUNT.decode(buffer, context);
       }
+      // NBT is stored as the custom data component since 1.20.5
       CompoundTag nbt = buffer.readNbt();
-      // not using make stack because we want to set share tag
-      if (item == Items.AIR || count <= 0) {
-        return ItemStack.EMPTY;
-      }
-      ItemStack stack = new ItemStack(item, count);
-      stack.readShareTag(nbt);
-      return stack;
+      return makeStack(item, count, nbt);
     }
 
     @Override
@@ -165,7 +175,7 @@ public class ItemStackLoadable {
       if (this == READ_COUNT) {
         COUNT.encode(buffer, stack);
       }
-      buffer.writeNbt(stack.getShareTag());
+      buffer.writeNbt(getTag(stack));
     }
   }
 }

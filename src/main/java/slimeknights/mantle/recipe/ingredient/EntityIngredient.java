@@ -4,12 +4,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonElement;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.common.DeferredSpawnEggItem;
+import net.minecraft.world.item.SpawnEggItem;
 import slimeknights.mantle.data.loadable.IAmLoadable;
 import slimeknights.mantle.data.loadable.Loadable;
 import slimeknights.mantle.data.loadable.Loadables;
@@ -111,15 +111,15 @@ public abstract class EntityIngredient implements Predicate<EntityType<?>>, IAmL
   }
 
 
-  /** @deprecated use {@link #LOADABLE} with {@link Loadable#encode(FriendlyByteBuf, Object)} */
+  /** @deprecated use {@link #LOADABLE} with {@link Loadable#encode(RegistryFriendlyByteBuf, Object)} */
   @Deprecated(forRemoval = true)
-  public void write(FriendlyByteBuf buffer) {
+  public void write(RegistryFriendlyByteBuf buffer) {
     SET_MATCH.encode(buffer, this);
   }
 
-  /** @deprecated use {@link #LOADABLE} with {@link Loadable#decode(FriendlyByteBuf)} */
+  /** @deprecated use {@link #LOADABLE} with {@link Loadable#decode(RegistryFriendlyByteBuf)} */
   @Deprecated(forRemoval = true)
-  public static EntityIngredient read(FriendlyByteBuf buffer) {
+  public static EntityIngredient read(RegistryFriendlyByteBuf buffer) {
     return SET_MATCH.decode(buffer);
   }
 
@@ -141,7 +141,7 @@ public abstract class EntityIngredient implements Predicate<EntityType<?>>, IAmL
   public List<ItemStack> getEggs() {
     if (eggs == null) {
       // use getDisplay to guarantee order is the same, just in case
-      eggs = getDisplay().stream().map(type -> new ItemStack(Objects.requireNonNullElse(DeferredSpawnEggItem.fromEntityType(type.type), Items.AIR))).toList();
+      eggs = getDisplay().stream().map(type -> new ItemStack(Objects.requireNonNullElse(SpawnEggItem.byId(type.type), Items.AIR))).toList();
     }
     return eggs;
   }

@@ -1,62 +1,36 @@
 package slimeknights.mantle.recipe.data;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition;
+import net.minecraft.world.item.crafting.Recipe;
+import net.neoforged.neoforge.common.conditions.ICondition;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 /**
- * Builds a recipe consumer wrapper, which adds some extra properties to wrap the result of another recipe
+ * Builds a {@link RecipeOutput} wrapper, which adds conditions to all recipes passed through it.
+ * <p>
+ * In 1.21 recipes carry their own serializer, so the legacy serializer-type override is no longer
+ * meaningful and has been dropped. For condition-only wrapping you may also use
+ * {@link RecipeOutput#withConditions(ICondition...)} directly.
  */
 @SuppressWarnings("unused")  // API
 public class ConsumerWrapperBuilder {
   private final List<ICondition> conditions = new ArrayList<>();
-  @Nullable
-  private final RecipeSerializer<?> override;
-  @Nullable
-  private final ResourceLocation overrideName;
 
-  private ConsumerWrapperBuilder(@Nullable RecipeSerializer<?> override, @Nullable ResourceLocation overrideName) {
-    this.override = override;
-    this.overrideName = overrideName;
-  }
+  private ConsumerWrapperBuilder() {}
 
   /**
-   * Creates a wrapper builder with the default serializer
-   * @return Default serializer builder
+   * Creates a wrapper builder
+   * @return Wrapper builder
    */
   public static ConsumerWrapperBuilder wrap() {
-    return new ConsumerWrapperBuilder(null, null);
-  }
-
-  /**
-   * Creates a wrapper builder with a serializer override
-   * @param override Serializer override
-   * @return Default serializer builder
-   */
-  public static ConsumerWrapperBuilder wrap(RecipeSerializer<?> override) {
-    return new ConsumerWrapperBuilder(override, null);
-  }
-
-  /**
-   * Creates a wrapper builder with a serializer name override
-   * @param override Serializer override
-   * @return Default serializer builder
-   */
-  public static ConsumerWrapperBuilder wrap(ResourceLocation override) {
-    return new ConsumerWrapperBuilder(null, override);
+    return new ConsumerWrapperBuilder();
   }
 
   /**
@@ -71,92 +45,32 @@ public class ConsumerWrapperBuilder {
   }
 
   /**
-   * Builds the consumer for the wrapper builder
-   * @param consumer Base consumer
-   * @return Built wrapper consumer
+   * Builds the recipe output for the wrapper builder
+   * @param base  Base recipe output
+   * @return Built wrapper recipe output that injects the accumulated conditions
    */
-  public Consumer<FinishedRecipe> build(Consumer<FinishedRecipe> consumer) {
-    return (recipe) -> consumer.accept(new Wrapped(recipe, conditions, override, overrideName));
+  public RecipeOutput build(RecipeOutput base) {
+    return new Wrapped(base, List.copyOf(conditions));
   }
 
-  private static class Wrapped implements FinishedRecipe {
-    private final FinishedRecipe original;
-    private final List<ICondition> conditions;
-    @Nullable
-    private final RecipeSerializer<?> override;
-    @Nullable
-    private final ResourceLocation overrideName;
+  /** Recipe output that prepends a set of conditions to every recipe before delegating */
+  private record Wrapped(RecipeOutput base, List<ICondition> conditions) implements RecipeOutput {
+    @Override
+    public Advancement.Builder advancement() {
+      return base.advancement();
+    }
 
-    private Wrapped(FinishedRecipe original, List<ICondition> conditions, @Nullable RecipeSerializer<?> override, @Nullable ResourceLocation overrideName) {
-      // if wrapping another wrapper result, merge the two together
-      if (original instanceof Wrapped toMerge) {
-        this.original = toMerge.original;
-        this.conditions = Stream.concat(toMerge.conditions.stream(), conditions.stream()).toList();
-        // consumer wrappers are processed inside out, so the innermost wrapped recipe is the one with the most recent serializer override
-        if (toMerge.override != null || toMerge.overrideName != null) {
-          this.override = toMerge.override;
-          this.overrideName = toMerge.overrideName;
-        } else {
-          this.override = override;
-          this.overrideName = overrideName;
-        }
+    @Override
+    public void accept(ResourceLocation id, Recipe<?> recipe, @Nullable AdvancementHolder advancement, ICondition... conditions) {
+      ICondition[] combined;
+      if (this.conditions.isEmpty()) {
+        combined = conditions;
       } else {
-        this.original = original;
-        this.conditions = conditions;
-        this.override = override;
-        this.overrideName = overrideName;
+        combined = new ICondition[this.conditions.size() + conditions.length];
+        this.conditions.toArray(combined);
+        System.arraycopy(conditions, 0, combined, this.conditions.size(), conditions.length);
       }
-    }
-
-    @Override
-    public JsonObject serializeRecipe() {
-      JsonObject json = new JsonObject();
-      if (overrideName != null) {
-        json.addProperty("type", overrideName.toString());
-      } else {
-        json.addProperty("type", Objects.requireNonNull(BuiltInRegistries.RECIPE_SERIALIZER.getKey(getType())).toString());
-      }
-      this.serializeRecipeData(json);
-      return json;
-    }
-
-    @Override
-    public void serializeRecipeData(JsonObject json) {
-      // add conditions on top
-      if (!conditions.isEmpty()) {
-        JsonArray conditionsArray = new JsonArray();
-        for (ICondition condition : conditions) {
-          conditionsArray.add(CraftingHelper.serialize(condition));
-        }
-        json.add("conditions", conditionsArray);
-      }
-      // serialize the normal recipe
-      original.serializeRecipeData(json);
-    }
-
-    @Override
-    public ResourceLocation getId() {
-      return original.getId();
-    }
-
-    @Override
-    public RecipeSerializer<?> getType() {
-      if (override != null) {
-        return override;
-      }
-      return original.getType();
-    }
-
-    @Nullable
-    @Override
-    public JsonObject serializeAdvancement() {
-      return original.serializeAdvancement();
-    }
-
-    @Nullable
-    @Override
-    public ResourceLocation getAdvancementId() {
-      return original.getAdvancementId();
+      base.accept(id, recipe, advancement, combined);
     }
   }
 }

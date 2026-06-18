@@ -8,7 +8,7 @@ import net.neoforged.fml.ModLoader;
 public interface ISafeManagerReloadListener extends ResourceManagerReloadListener {
   @Override
   default void onResourceManagerReload(ResourceManager resourceManager) {
-    if (ModLoader.isLoadingStateValid()) {
+    if (!ModLoader.hasErrors()) {
       onReloadSafe(resourceManager);
     }
   }

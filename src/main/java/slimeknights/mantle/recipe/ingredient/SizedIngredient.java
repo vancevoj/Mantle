@@ -3,7 +3,7 @@ package slimeknights.mantle.recipe.ingredient;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -124,9 +124,9 @@ public class SizedIngredient implements Predicate<ItemStack> {
     return matchingStacks;
   }
 
-  /** use {@link #LOADABLE} with {@link slimeknights.mantle.data.loadable.Loadable#encode(FriendlyByteBuf, Object)} */
+  /** use {@link #LOADABLE} with {@link slimeknights.mantle.data.loadable.Loadable#encode(RegistryFriendlyByteBuf, Object)} */
   @Deprecated(forRemoval = true)
-  public void write(FriendlyByteBuf buffer) {
+  public void write(RegistryFriendlyByteBuf buffer) {
     LOADABLE.encode(buffer, this);
   }
 
@@ -138,9 +138,9 @@ public class SizedIngredient implements Predicate<ItemStack> {
     return json;
   }
 
-  /** @deprecated use {@link #LOADABLE} with {@link slimeknights.mantle.data.loadable.Loadable#decode(FriendlyByteBuf)}  */
+  /** @deprecated use {@link #LOADABLE} with {@link slimeknights.mantle.data.loadable.Loadable#decode(RegistryFriendlyByteBuf)}  */
   @Deprecated(forRemoval = true)
-  public static SizedIngredient read(FriendlyByteBuf buffer) {
+  public static SizedIngredient read(RegistryFriendlyByteBuf buffer) {
     return LOADABLE.decode(buffer);
   }
 

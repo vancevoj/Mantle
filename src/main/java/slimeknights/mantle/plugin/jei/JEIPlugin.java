@@ -1,5 +1,6 @@
 package slimeknights.mantle.plugin.jei;
 
+// TODO(neoport): JEI dep disabled
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;

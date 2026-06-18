@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
-import lombok.RequiredArgsConstructor;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -17,11 +17,15 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 /** Loot condition requiring one of the existing items is the given stack */
-@RequiredArgsConstructor
 public class ContainsItemModifierLootCondition implements ILootModifierCondition {
   public static final ResourceLocation ID = Mantle.getResource("contains_item");
   private final Ingredient ingredient;
   private final int amountNeeded;
+
+  public ContainsItemModifierLootCondition(Ingredient ingredient, int amountNeeded) {
+    this.ingredient = ingredient;
+    this.amountNeeded = amountNeeded;
+  }
 
   public ContainsItemModifierLootCondition(Ingredient ingredient) {
     this(ingredient, 1);
@@ -45,7 +49,7 @@ public class ContainsItemModifierLootCondition implements ILootModifierCondition
   public JsonObject serialize(JsonSerializationContext context) {
     JsonObject json = new JsonObject();
     json.addProperty("type", ID.toString());
-    json.add("ingredient", ingredient.toJson());
+    json.add("ingredient", Ingredient.CODEC.encodeStart(JsonOps.INSTANCE, ingredient).getOrThrow(JsonParseException::new));
     if (amountNeeded != 1) {
       json.addProperty("needed", amountNeeded);
     }
@@ -55,7 +59,7 @@ public class ContainsItemModifierLootCondition implements ILootModifierCondition
   /** Parses this from JSON */
   public static ContainsItemModifierLootCondition deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
     JsonObject json = GsonHelper.convertToJsonObject(element, "condition");
-    Ingredient ingredient = Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "ingredient"));
+    Ingredient ingredient = Ingredient.CODEC.parse(JsonOps.INSTANCE, GsonHelper.getAsJsonObject(json, "ingredient")).getOrThrow(JsonParseException::new);
     int needed = GsonHelper.getAsInt(json, "needed", 1);
     return new ContainsItemModifierLootCondition(ingredient, needed);
   }

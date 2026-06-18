@@ -27,7 +27,7 @@ public class ArgumentTypeDeferredRegister extends DeferredRegisterWrapper<Argume
    * @param <I>  Argument info type
    * @return  Registry object
    */
-  public <A extends ArgumentType<?>,T extends ArgumentTypeInfo.Template<A>,I extends ArgumentTypeInfo<A,T>> DeferredHolder<?, I> register(String name, Class<? super A> argumentClass, Supplier<I> supplier) {
+  public <A extends ArgumentType<?>,T extends ArgumentTypeInfo.Template<A>,I extends ArgumentTypeInfo<A,T>> DeferredHolder<? super I, I> register(String name, Class<? super A> argumentClass, Supplier<I> supplier) {
     return register.register(name, () -> {
       I info = supplier.get();
       ArgumentTypeInfos.registerByClass(RegistrationHelper.genericArgumentType(argumentClass), info);
@@ -43,7 +43,7 @@ public class ArgumentTypeDeferredRegister extends DeferredRegisterWrapper<Argume
    * @param <A>  Argument type
    * @return  Registry object
    */
-  public <A extends ArgumentType<?>> DeferredHolder<?, SingletonArgumentInfo<A>> registerSingleton(String name, Class<A> argumentClass, Supplier<A> supplier) {
+  public <A extends ArgumentType<?>> DeferredHolder<? super SingletonArgumentInfo<A>, SingletonArgumentInfo<A>> registerSingleton(String name, Class<A> argumentClass, Supplier<A> supplier) {
     return register(name, argumentClass, () -> SingletonArgumentInfo.contextFree(supplier));
   }
 }

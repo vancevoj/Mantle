@@ -4,7 +4,6 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
-import lombok.RequiredArgsConstructor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.util.GsonHelper;
@@ -15,12 +14,15 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 /** Loot modifier condition that inverts the base condition */
-@RequiredArgsConstructor
 public class InvertedModifierLootCondition implements ILootModifierCondition {
   public static final ResourceLocation ID = Mantle.getResource("inverted");
 
   /** Condition to invert */
   private final ILootModifierCondition base;
+
+  public InvertedModifierLootCondition(ILootModifierCondition base) {
+    this.base = base;
+  }
 
   @Override
   public boolean test(List<ItemStack> generatedLoot, LootContext context) {

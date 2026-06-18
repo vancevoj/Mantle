@@ -37,7 +37,7 @@ public class EntityTypeDeferredRegister extends DeferredRegisterWrapper<EntityTy
    * @param <T>   Entity class type
    * @return  Entity registry object
    */
-  public <T extends Entity> DeferredHolder<?, EntityType<T>> register(String name, Supplier<EntityType.Builder<T>> sup) {
+  public <T extends Entity> DeferredHolder<? super EntityType<T>, EntityType<T>> register(String name, Supplier<EntityType.Builder<T>> sup) {
     return register.register(name, () -> sup.get().build(resourceName(name)));
   }
 
@@ -51,7 +51,7 @@ public class EntityTypeDeferredRegister extends DeferredRegisterWrapper<EntityTy
    * @return  Entity registry object
    */
   public <T extends Mob> EntityObject<T> registerWithEgg(String name, Supplier<EntityType.Builder<T>> sup, int primary, int secondary) {
-    DeferredHolder<?, EntityType<T>> object = register(name, sup);
+    DeferredHolder<? super EntityType<T>, EntityType<T>> object = register(name, sup);
     return new EntityObject<>(object, itemRegistry.register(name + "_spawn_egg", () -> new DeferredSpawnEggItem(object, primary, secondary, new Item.Properties())));
   }
 }

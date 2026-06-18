@@ -21,7 +21,7 @@ public class AttributeDeferredRegister extends DeferredRegisterWrapper<Attribute
    * @param syncable      If true, this attribute syncs to the client
    * @return  Registered attribute
    */
-  public DeferredHolder<?, Attribute> register(String name, double defaultValue, double min, double max, boolean syncable) {
+  public DeferredHolder<? super Attribute, Attribute> register(String name, double defaultValue, double min, double max, boolean syncable) {
     return register.register(name, () -> new RangedAttribute("attribute.name." + modID + "." + name, defaultValue, min, max).setSyncable(syncable));
   }
 
@@ -32,7 +32,7 @@ public class AttributeDeferredRegister extends DeferredRegisterWrapper<Attribute
    * @param syncable      If true, this attribute syncs to the client
    * @return  Registered attribute
    */
-  public DeferredHolder<?, Attribute> registerPercent(String name, double defaultValue, boolean syncable) {
+  public DeferredHolder<? super Attribute, Attribute> registerPercent(String name, double defaultValue, boolean syncable) {
     return register(name, defaultValue, 0, 1, syncable);
   }
 
@@ -42,7 +42,7 @@ public class AttributeDeferredRegister extends DeferredRegisterWrapper<Attribute
    * @param syncable      If true, this attribute syncs to the client
    * @return  Registered attribute
    */
-  public DeferredHolder<?, Attribute> registerMultiplier(String name, boolean syncable) {
+  public DeferredHolder<? super Attribute, Attribute> registerMultiplier(String name, boolean syncable) {
     return register(name, 1, 0, 100, syncable);
   }
 }

@@ -26,8 +26,10 @@ public class EmptyFluidWithNBTTransfer extends EmptyFluidContainerTransfer {
 
   @Override
   protected FluidStack getFluid(ItemStack stack) {
-    // TODO: merge NBT?
-    return new FluidStack(fluid.get().getFluid(), fluid.getAmount(), stack.getTag());
+    // copy the item's data components onto the fluid (replaces the old NBT copy)
+    FluidStack result = new FluidStack(fluid.get().getFluid(), fluid.getAmount());
+    result.applyComponents(stack.getComponentsPatch());
+    return result;
   }
 
   @Override

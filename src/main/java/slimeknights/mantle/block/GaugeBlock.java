@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -22,7 +21,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.capabilities.ForgeCapabilities;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
@@ -65,16 +64,18 @@ public class GaugeBlock extends Block {
     return Component.translatable(CAPACITY_KEY, TranslationHelper.COMMA_FORMAT.format(capacity));
   }
 
-  @SuppressWarnings("deprecation")
-  @Deprecated
   @Override
-  public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+  protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
     // display adjacent tank contents
     if (!world.isClientSide()) {
       Direction side = state.getValue(FACING);
-      BlockEntity te = world.getBlockEntity(pos.relative(side.getOpposite()));
+      BlockPos neighbor = pos.relative(side.getOpposite());
+      BlockEntity te = world.getBlockEntity(neighbor);
       if (te != null) {
-        IFluidHandler handler = te.getCapability(ForgeCapabilities.FLUID_HANDLER, side).orElse(EmptyFluidHandler.INSTANCE);
+        IFluidHandler handler = world.getCapability(Capabilities.FluidHandler.BLOCK, neighbor, side);
+        if (handler == null) {
+          handler = EmptyFluidHandler.INSTANCE;
+        }
         if (handler.getTanks() > 0) {
           FluidStack fluid = handler.getFluidInTank(0);
           if (fluid.isEmpty()) {
@@ -101,13 +102,14 @@ public class GaugeBlock extends Block {
     return BOUNDS[state.getValue(FACING).get3DDataValue()];
   }
 
-  @SuppressWarnings("deprecation")
-  @Deprecated
   @Override
-  public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
+  protected boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
     Direction direction = state.getValue(FACING);
-    BlockEntity te = world.getBlockEntity(pos.relative(direction.getOpposite()));
-    return te != null && te.getCapability(ForgeCapabilities.FLUID_HANDLER, direction).isPresent();
+    BlockPos neighbor = pos.relative(direction.getOpposite());
+    if (!(world instanceof Level level)) {
+      return world.getBlockEntity(neighbor) != null;
+    }
+    return level.getCapability(Capabilities.FluidHandler.BLOCK, neighbor, direction) != null;
   }
 
   @Override

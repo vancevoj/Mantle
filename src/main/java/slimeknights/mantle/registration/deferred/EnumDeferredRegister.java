@@ -16,7 +16,7 @@ public class EnumDeferredRegister<T> extends DeferredRegisterWrapper<T> {
   }
 
   /** Registers a standard object */
-  public <I extends T> DeferredHolder<?, I> register(String name, Supplier<? extends I> value) {
+  public <I extends T> DeferredHolder<? super I, I> register(String name, Supplier<? extends I> value) {
     return register.register(name, value);
   }
 
