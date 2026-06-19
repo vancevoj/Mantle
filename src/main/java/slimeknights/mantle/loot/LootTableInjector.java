@@ -8,7 +8,11 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.conditions.ICondition.IContext;
+import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
+import net.minecraft.resources.RegistryOps;
+import net.neoforged.neoforge.common.conditions.ICondition;
+import javax.annotation.Nullable;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import net.neoforged.bus.api.EventPriority;
@@ -37,13 +41,14 @@ public enum LootTableInjector implements IEarlyReloadListener {
   public static void init() {
     NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, AddReloadListenerEvent.class, event -> {
       event.addListener(INSTANCE);
-      INSTANCE.context = event.getConditionContext();
+      INSTANCE.conditionOps = RegistryOps.create(JsonOps.INSTANCE, event.getRegistryAccess());
     });
     NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, LootTableLoadEvent.class, INSTANCE::lootTableLoad);
   }
 
-  /** Condition context for preventing load */
-  private IContext context = IContext.EMPTY;
+  /** Registry-backed ops for evaluating load conditions */
+  @Nullable
+  private RegistryOps<JsonElement> conditionOps = null;
   /** Map of injections to use on loot table load */
   private Map<ResourceLocation,LootTableInjection> injections = Collections.emptyMap();
 
@@ -56,12 +61,8 @@ public enum LootTableInjector implements IEarlyReloadListener {
       try (Reader reader = entry.getValue().openAsReader()) {
         JsonObject json = GsonHelper.fromJson(JsonHelper.DEFAULT_GSON, reader, JsonObject.class);
         if (json != null) {
-          // skip if empty for easy removals
-          // TODO(neoport): condition gating used Forge's CraftingHelper.processConditions(json, "conditions", context), which is gone.
-          // NeoForge 1.21 conditions are codec based (ICondition.conditionsMatched) and require a ConditionalOps built from
-          // RegistryOps, which is not available in this resource-manager-only reload callback. For now injectors always load;
-          // wire registry access through here to restore condition gating.
-          if (!json.keySet().isEmpty()) {
+          // skip if empty for easy removals, and honor neoforge load conditions (e.g. mod-loaded gating)
+          if (!json.keySet().isEmpty() && (conditionOps == null || ICondition.conditionsMatched(conditionOps, json))) {
             // the builder allows us to merge from multiple sources, for efficiency
             // ensures a given table name and pool name both show just once
             LootTableInjection injection = LootTableInjection.LOADABLE.deserialize(json);

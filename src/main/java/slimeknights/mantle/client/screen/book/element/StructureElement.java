@@ -65,7 +65,9 @@ public class StructureElement extends SizedBookElement {
 
   @Override
   public void draw(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks, Font fontRenderer) {
-    MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(new ByteBufferBuilder(256));
+    // 1.21: ByteBufferBuilder owns native memory and must be closed, else it leaks every frame this page renders
+    ByteBufferBuilder byteBuffer = new ByteBufferBuilder(256);
+    MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(byteBuffer);
     PoseStack transform = graphics.pose();
     PoseStack.Pose lastEntryBeforeTry = transform.last();
 
@@ -153,6 +155,7 @@ public class StructureElement extends SizedBookElement {
     }
 
     buffer.endBatch();
+    byteBuffer.close();
   }
 
   @Override

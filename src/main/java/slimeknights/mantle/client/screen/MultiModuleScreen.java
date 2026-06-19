@@ -141,7 +141,11 @@ public class MultiModuleScreen<CONTAINER extends MultiModuleContainerMenu<?>> ex
 
   @Override
   public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-    this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+    // 1.21: do NOT call renderBackground() here. Screen.render() now invokes it itself, and
+    // AbstractContainerScreen.renderBackground draws BOTH the dimming overlay AND renderBg (the GUI
+    // texture + our fluid tanks). Calling it manually like 1.20.1 did made everything render twice at
+    // two different leftPos values: a doubled (too dark) background panel and a duplicated fluid band.
+    // We set the multi-module bounds first so the single renderBackground inside super.render uses them.
     int oldX = this.leftPos;
     int oldY = this.topPos;
     int oldW = this.imageWidth;
@@ -205,8 +209,14 @@ public class MultiModuleScreen<CONTAINER extends MultiModuleContainerMenu<?>> ex
       }
     }
 
-    // 1.21: Slot.x/y are final, so the wrapper position can no longer be re-synced here.
-    // WrapperSlot is already constructed at its parent's x/y (see WrapperSlot constructor), so no update is needed.
+    // Sync the wrapper to its parent's CURRENT position. Module screens reposition their real slots
+    // in updateSlots(), but the menu renders these wrapper copies, whose x/y were captured at
+    // construction. Without this, side-inventory items render at stale positions and only appear
+    // after a reopen. Slot.x/y are mutable public fields (updateSlots writes them), so this is safe.
+    if (slotIn instanceof WrapperSlot wrapper) {
+      slotIn.x = wrapper.parent.x;
+      slotIn.y = wrapper.parent.y;
+    }
 
     super.renderSlot(graphics, slotIn);
   }

@@ -144,7 +144,8 @@ public abstract class SingleItemHandler<T extends MantleBlockEntity> implements 
   public CompoundTag writeToNBT(HolderLookup.Provider registries) {
     CompoundTag nbt = new CompoundTag();
     if (!stack.isEmpty()) {
-      stack.save(registries, nbt);
+      // 1.21: ItemStack.save RETURNS the encoded tag and must be used; discarding it lost the stack on save
+      return (CompoundTag) stack.save(registries, nbt);
     }
     return nbt;
   }

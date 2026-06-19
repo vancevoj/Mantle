@@ -151,7 +151,21 @@ public class IngredientData implements IDataElement {
       }
 
       JsonObject object = json.getAsJsonObject();
-      return SizedIngredient.deserialize(object);
+      try {
+        return SizedIngredient.deserialize(object);
+      } catch (RuntimeException e) {
+        // 1.21: legacy {"type":"forge:nbt","item":...,"nbt":{...}} display ingredients no longer parse
+        // (the forge:nbt ingredient type and the old NBT keys like Material/tic_broken/slot are gone).
+        // Fall back to the bare item so book index icons show the actual item instead of an error barrier.
+        JsonElement itemEl = object.get("item");
+        if (itemEl != null && itemEl.isJsonPrimitive()) {
+          Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(itemEl.getAsString()));
+          if (item != Items.AIR) {
+            return SizedIngredient.fromItems(item);
+          }
+        }
+        throw e;
+      }
     }
   }
 }

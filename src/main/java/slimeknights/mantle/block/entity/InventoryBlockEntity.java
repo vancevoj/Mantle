@@ -226,8 +226,11 @@ public abstract class InventoryBlockEntity extends NameableBlockEntity implement
       if (!inventory.getItem(i).isEmpty()) {
         CompoundTag itemTag = new CompoundTag();
         itemTag.putByte(TAG_SLOT, (byte) i);
-        inventory.getItem(i).save(registries, itemTag);
-        nbttaglist.add(itemTag);
+        // 1.21: ItemStack.save() RETURNS the encoded tag and does not mutate the prefix in place
+        // (1.20 mutated it). The old code ignored the return, so each entry was written as just
+        // {Slot:i} with no item id -> items were lost on save and never synced (casting table items
+        // invisible, "No key id in MapLike[{Slot:Nb}]" errors). Store the returned merged tag.
+        nbttaglist.add(inventory.getItem(i).save(registries, itemTag));
       }
     }
 
@@ -245,7 +248,10 @@ public abstract class InventoryBlockEntity extends NameableBlockEntity implement
       CompoundTag itemTag = list.getCompound(i);
       int slot = itemTag.getByte(TAG_SLOT) & 255;
       if (slot < this.inventory.size()) {
-        ItemStack stack = ItemStack.parseOptional(registries, itemTag);
+        // 1.21: the slot compound carries a "Slot" byte alongside the item; an empty slot saved as
+        // just {Slot:N} (no "id") makes the strict ItemStack codec throw ("No key id in MapLike"),
+        // which dropped the synced item client-side (casting table contents looked invisible).
+        ItemStack stack = itemTag.contains("id") ? ItemStack.parseOptional(registries, itemTag) : ItemStack.EMPTY;
         if (!stack.isEmpty() && stack.getCount() > limit) {
           stack.setCount(limit);
         }

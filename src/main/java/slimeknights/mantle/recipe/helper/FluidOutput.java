@@ -263,12 +263,22 @@ public abstract class FluidOutput implements Supplier<FluidStack> {
 
     @Override
     public FluidOutput decode(FriendlyByteBuf buffer, TypedMap context) {
+      // presence flag mirrors ItemOutput.Loadable: a tag output whose tag is empty in this environment
+      // must not reach the strict (non-empty) stack codec or it throws mid update_recipes packet, dropping the sync.
+      if (!buffer.readBoolean()) {
+        return FluidOutput.EMPTY;
+      }
       return fromStack(stack.decode(buffer, context));
     }
 
     @Override
     public void encode(FriendlyByteBuf buffer, FluidOutput object) {
-      stack.encode(buffer, object.get());
+      FluidStack out = object.get();
+      boolean present = !out.isEmpty();
+      buffer.writeBoolean(present);
+      if (present) {
+        stack.encode(buffer, out);
+      }
     }
 
 
