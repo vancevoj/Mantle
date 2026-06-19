@@ -14,7 +14,8 @@ import slimeknights.mantle.data.loadable.record.RecordLoadable;
 public record LoadableIngredientSerializer<T extends ICustomIngredient>(RecordLoadable<T> loadable) {
   /** Builds a map codec bridging the loadable to the dynamic ops form vanilla expects */
   public MapCodec<T> mapCodec() {
-    return new LoadableRecipeSerializer.LoadableMapCodec<>(loadable);
+    // custom ingredients do not need recipe context (no ID/SERIALIZER fields), so pass null for the context builder
+    return new LoadableRecipeSerializer.LoadableMapCodec<>(loadable, null);
   }
 
   /** Builds a stream codec from the loadable */

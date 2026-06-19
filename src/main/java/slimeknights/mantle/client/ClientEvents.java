@@ -28,6 +28,7 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
@@ -119,10 +120,18 @@ public class ClientEvents {
 
   @SubscribeEvent
   static void commonSetup(FMLCommonSetupEvent event) {
-    // TODO(neoport): ExtraHeartRenderHandler is now a LayeredDraw.Layer (should register via RegisterGuiLayersEvent), not an
-    // event subscriber; NeoForge.EVENT_BUS.register threw (no @SubscribeEvent methods). Removed; re-add as a GUI layer to restore extra-heart rendering.
     NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, RenderGuiLayerEvent.Post.class, ClientEvents::renderOffhandAttackIndicator);
     NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, RenderGuiLayerEvent.Post.class, ClientEvents::renderGaugeTooltip);
+  }
+
+  /**
+   * Registers the custom heart renderer as a replacement for the vanilla player health GUI layer.
+   * Mirrors the 1.20 behavior of {@code MinecraftForge.EVENT_BUS.register(new ExtraHeartRenderHandler())},
+   * which took over heart rendering by cancelling and redrawing the vanilla hearts.
+   */
+  @SubscribeEvent
+  static void registerGuiLayers(RegisterGuiLayersEvent event) {
+    event.replaceLayer(VanillaGuiLayers.PLAYER_HEALTH, new ExtraHeartRenderHandler());
   }
 
   /** Vanilla attack indicator sprites, split out of the old GUI_ICONS atlas in 1.21 */
