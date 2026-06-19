@@ -327,12 +327,23 @@ public abstract class ItemOutput implements Supplier<ItemStack> {
 
     @Override
     public ItemOutput decode(FriendlyByteBuf buffer, TypedMap context) {
+      // a present flag precedes the stack: the resolved output may be empty even for a non-empty loadable (e.g. a
+      // tag output whose tag is empty in this environment). without this, the strict stack codec throws mid-packet
+      // and aborts the whole update_recipes sync, disconnecting the client.
+      if (!buffer.readBoolean()) {
+        return ItemOutput.EMPTY;
+      }
       return fromStack(stack.decode(buffer, context));
     }
 
     @Override
     public void encode(FriendlyByteBuf buffer, ItemOutput object) {
-      stack.encode(buffer, object.get());
+      ItemStack out = object.get();
+      boolean present = !out.isEmpty();
+      buffer.writeBoolean(present);
+      if (present) {
+        stack.encode(buffer, out);
+      }
     }
 
 
