@@ -13,9 +13,10 @@ plugins {
 }
 
 group = 'slimeknights.mantle'
-version = "${minecraft_version}-${mod_version}"
+// version = <mc>-<upstream Mantle version>-v<fork version>, e.g. 1.21.1-1.21.0-v1.0
+version = "${minecraft_version}-${mod_version}-v${fork_version}"
 base {
-    archivesName = 'Mantle'
+    archivesName = 'NeoMantle'
 }
 
 java {
@@ -97,6 +98,8 @@ sourceSets.main.java {
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
         version        : version,
+        mod_version    : mod_version,
+        fork_version   : fork_version,
         loader_range   : loader_range,
         minecraft_range: minecraft_range,
         neoforge_range : neoforge_range

@@ -6,10 +6,10 @@ license="MIT"
 [[mods]]
     modId="mantle"
     version="${version}"
-    displayName="Mantle"
-    authors="Slime Knights"
+    displayName="Neo Mantle"
+    authors="Slime Knights, vancevoj"
     description='''
-Shared code for Slime Knights mods and others. NeoForge 1.21.1 port.
+Shared code for Slime Knights mods and others. Neo Mantle is vancevoj's NeoForge 1.21.1 port of Slime Knights' Mantle ${mod_version}.
     '''
     displayURL="https://github.com/vancevoj/Mantle"
 
