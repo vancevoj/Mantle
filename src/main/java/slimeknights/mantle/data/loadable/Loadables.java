@@ -1,10 +1,16 @@
 package slimeknights.mantle.data.loadable;
 
+import com.google.gson.JsonSyntaxException;
+import io.netty.handler.codec.DecoderException;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -55,8 +61,38 @@ public class Loadables {
   public static final ResourceLocationLoadable<FluidType> FLUID_TYPE = new LazyRegistryLoadable<>(NeoForgeRegistries.Keys.FLUID_TYPES);
   public static final ResourceLocationLoadable<MobEffect> MOB_EFFECT = new RegistryLoadable<>(BuiltInRegistries.MOB_EFFECT);
   public static final ResourceLocationLoadable<Block> BLOCK = new RegistryLoadable<>(BuiltInRegistries.BLOCK);
-  // enchantments are a dynamic (data-driven) registry in 1.21, so they must be loaded lazily via the registry access
-  public static final ResourceLocationLoadable<Enchantment> ENCHANTMENT = new LazyRegistryLoadable<>(Registries.ENCHANTMENT);
+  // enchantments are a dynamic (data-driven) registry in 1.21 (the static registry is empty), so they are stored as a
+  // Holder (which serializes by key) and resolved on parse via ContextKey.REGISTRIES in the parse context
+  public static final ResourceLocationLoadable<Holder<Enchantment>> ENCHANTMENT = new ResourceLocationLoadable<>() {
+    @Override
+    public ResourceLocation getKey(Holder<Enchantment> object) {
+      return object.unwrapKey().orElseThrow(() -> new RuntimeException("Cannot serialize unregistered enchantment holder " + object)).location();
+    }
+
+    @Override
+    public Holder<Enchantment> fromKey(ResourceLocation name, String key, slimeknights.mantle.util.typed.TypedMap context) {
+      ResourceKey<Enchantment> enchantmentKey = ResourceKey.create(Registries.ENCHANTMENT, name);
+      HolderLookup.Provider registries = context.get(slimeknights.mantle.data.loadable.field.ContextKey.REGISTRIES);
+      if (registries != null) {
+        return registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(enchantmentKey);
+      }
+      throw new JsonSyntaxException("Unable to resolve enchantment '" + name + "' for " + key + ": no registry access (ContextKey.REGISTRIES) in the parse context");
+    }
+
+    @Override
+    public Holder<Enchantment> decode(FriendlyByteBuf buffer, slimeknights.mantle.util.typed.TypedMap context) {
+      ResourceKey<Enchantment> enchantmentKey = ResourceKey.create(Registries.ENCHANTMENT, buffer.readResourceLocation());
+      if (buffer instanceof RegistryFriendlyByteBuf registryBuffer) {
+        return registryBuffer.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(enchantmentKey);
+      }
+      throw new DecoderException("Cannot decode an enchantment without a RegistryFriendlyByteBuf");
+    }
+
+    @Override
+    public void encode(FriendlyByteBuf buffer, Holder<Enchantment> value) {
+      buffer.writeResourceLocation(getKey(value));
+    }
+  };
   public static final ResourceLocationLoadable<EntityType<?>> ENTITY_TYPE = new RegistryLoadable<>(BuiltInRegistries.ENTITY_TYPE);
   public static final ResourceLocationLoadable<Item> ITEM = new RegistryLoadable<>(BuiltInRegistries.ITEM);
   public static final ResourceLocationLoadable<Potion> POTION = new RegistryLoadable<>(BuiltInRegistries.POTION);
