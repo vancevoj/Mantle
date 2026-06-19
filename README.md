@@ -8,7 +8,7 @@ Full credit for the mod goes to SlimeKnights. I take no credit for any of the or
 
 ## Download
 
-- [NeoMantle - latest release](https://github.com/vancevoj/neomantle/releases/latest)
+- [Neo Mantle - latest release](https://github.com/vancevoj/neomantle/releases/latest)
 
 ## Optional Download - Neo Planner
 
