@@ -20,9 +20,9 @@ public enum DisplayContextLoadable implements ResourceLocationLoadable<ItemDispl
 
   @Override
   public ItemDisplayContext fromKey(ResourceLocation name, String key, TypedMap context) {
-    // values are keyed by their serialized name; addon contexts also live in the minecraft namespace via the enum extension
+    // values are keyed by their serialized name; vanilla contexts resolve to the minecraft namespace, addon contexts may be namespaced (e.g. tconstruct:melter)
     for (ItemDisplayContext value : ItemDisplayContext.values()) {
-      if (name.getPath().equals(value.getSerializedName())) {
+      if (ResourceLocation.parse(value.getSerializedName()).equals(name)) {
         return value;
       }
     }
@@ -31,7 +31,8 @@ public enum DisplayContextLoadable implements ResourceLocationLoadable<ItemDispl
 
   @Override
   public ResourceLocation getKey(ItemDisplayContext object) {
-    return ResourceLocation.withDefaultNamespace(object.getSerializedName());
+    // parse handles both bare vanilla names (e.g. "fixed" -> minecraft:fixed) and namespaced addon names (e.g. "tconstruct:melter")
+    return ResourceLocation.parse(object.getSerializedName());
   }
 
   @Override
