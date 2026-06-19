@@ -50,7 +50,7 @@ public class Config {
         "This config option is provided as the fix breaks shaders, and slightly broken is better than fully broken.",
         "Best fix is to fix your shaders though, so you can have no broken visuals.")
       .translation("config.mantle.enableFluidFogFix")
-      .define("enableFluidFogFix", true);
+      .define("enableFluidFogFix", false);
 
 		// server options
 		TAG_PREFERENCES = server.comment("Preferences for outputs from tags used in automatic compat in recipes")
