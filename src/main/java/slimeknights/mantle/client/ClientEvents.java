@@ -119,7 +119,8 @@ public class ClientEvents {
 
   @SubscribeEvent
   static void commonSetup(FMLCommonSetupEvent event) {
-    NeoForge.EVENT_BUS.register(new ExtraHeartRenderHandler());
+    // TODO(neoport): ExtraHeartRenderHandler is now a LayeredDraw.Layer (should register via RegisterGuiLayersEvent), not an
+    // event subscriber; NeoForge.EVENT_BUS.register threw (no @SubscribeEvent methods). Removed; re-add as a GUI layer to restore extra-heart rendering.
     NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, RenderGuiLayerEvent.Post.class, ClientEvents::renderOffhandAttackIndicator);
     NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, RenderGuiLayerEvent.Post.class, ClientEvents::renderGaugeTooltip);
   }
