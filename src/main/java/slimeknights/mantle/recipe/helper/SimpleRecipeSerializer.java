@@ -17,6 +17,9 @@ public record SimpleRecipeSerializer<T extends Recipe<?>>(Supplier<T> constructo
 
   @Override
   public StreamCodec<RegistryFriendlyByteBuf,T> streamCodec() {
-    return StreamCodec.unit(constructor.get());
+    // no data to sync; build a fresh instance on decode. Must NOT use StreamCodec.unit(constructor.get()),
+    // as that captures a single instance and asserts identity equality on encode, which fails because the
+    // map codec (MapCodec.unit(constructor)) decodes a distinct instance per datapack load.
+    return StreamCodec.of((buf, value) -> {}, buf -> constructor.get());
   }
 }
