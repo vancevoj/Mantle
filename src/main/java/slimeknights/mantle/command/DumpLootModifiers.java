@@ -34,7 +34,8 @@ public class DumpLootModifiers {
 
   // loot modifiers
   private static final Component LOOT_MODIFIER_SUCCESS_LOG = Component.translatable("command.mantle.dump_loot_modifiers.success_log");
-  protected static final SimpleCommandExceptionType ERROR_READING_LOOT_MODIFIERS = new SimpleCommandExceptionType(Component.translatable("command.mantle.dump_loot_modifiers.read_error", GLOBAL_LOOT_MODIFIERS));
+  // 1.21: TranslatableContents args must be Component/Number/Boolean/String, so pass the location as a string
+  protected static final SimpleCommandExceptionType ERROR_READING_LOOT_MODIFIERS = new SimpleCommandExceptionType(Component.translatable("command.mantle.dump_loot_modifiers.read_error", GLOBAL_LOOT_MODIFIERS.toString()));
 
   /**
    * Registers this sub command with the root command
