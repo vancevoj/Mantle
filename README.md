@@ -1,4 +1,4 @@
-# NeoMantle
+# Neo Mantle
 
 An unofficial **Minecraft 1.21.1 NeoForge** port of **Mantle** by SlimeKnights.
 
