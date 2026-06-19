@@ -164,6 +164,13 @@ public class BookScreen extends Screen {
       return;
     }
 
+    // 1.21: draw the (blurred) backdrop BEFORE the book. Screen.render() calls
+    // renderBackground() -> renderBlurredBackground(), which post-processes the framebuffer.
+    // The old code drew the book first and only called super.render() at the end, so the blur
+    // pass smeared the whole book (and held item, and world). Render the backdrop first, then the
+    // book content, then the widgets manually (end of method) so the blur stays behind the book.
+    this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+
     Font fontRenderer = getFontRenderer();
 
     if (debug) {
@@ -253,7 +260,12 @@ public class BookScreen extends Screen {
       }
     }
 
-    super.render(graphics, mouseX, mouseY, partialTicks);
+    // Render widgets (page arrows, index button) WITHOUT super.render(), which would re-run
+    // renderBackground()/renderBlurredBackground() and blur the already-drawn book. This mirrors
+    // Screen.render() minus the (already-done) background pass.
+    for (net.minecraft.client.gui.components.Renderable renderable : this.renderables) {
+      renderable.render(graphics, mouseX, mouseY, partialTicks);
+    }
   }
 
   private boolean shouldRenderPage(int pageNum, boolean rightSide) {
