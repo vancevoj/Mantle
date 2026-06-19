@@ -9,3 +9,9 @@ Full credit for the mod goes to SlimeKnights. I take no credit for any of the or
 ## Download
 
 - [NeoMantle - latest release](https://github.com/vancevoj/neomantle/releases/latest)
+
+## Optional Download - Neo Planner
+
+Neo Planner is another **unofficial** port - of the Tinkers Construct Planner addon-mod (a client-side helper for trying out tool material & modifier combinations). This port is functional for 1.21.1 NeoForge, requires Neo Tinkers, and again - is in no way endorsed by any persons aside myself. Download & use the following at your own discretion.
+
+- [Neo Planner - latest release](https://github.com/vancevoj/neoplanner/releases/latest)
