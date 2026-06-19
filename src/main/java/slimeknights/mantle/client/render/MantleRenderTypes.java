@@ -22,17 +22,12 @@ public class MantleRenderTypes extends RenderType {
 
   /**
    * Render type used for the fluid renderer.
-   * TODO 1.21: can we replace this with {@link RenderType#ENTITY_TRANSLUCENT_CULL}? Would require including normals in our vertex format.
+   * <p>1.21: uses the vanilla {@link RenderType#entityTranslucentCull} shader and {@link DefaultVertexFormat#NEW_ENTITY}
+   * format (vertices must include overlay + normal, see {@link FluidRenderer#putTexturedQuad}). The previous custom
+   * {@link #FLUID_SHADER} / {@code POSITION_COLOR_TEX_LIGHTMAP} render type was invisible under Iris/Oculus, which only
+   * render geometry on render types they recognize; the vanilla entity-translucent shader is fully supported.
    */
-  public static final RenderType FLUID = create(
-    Mantle.modId + ":block_render_type",
-    DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, 256, false, true,
-    RenderType.CompositeState.builder()
-      .setLightmapState(LIGHTMAP)
-      .setShaderState(FLUID_SHADER)
-      .setTextureState(BLOCK_SHEET_MIPPED)
-      .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-      .createCompositeState(false));
+  public static final RenderType FLUID = entityTranslucentCull(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS);
 
   /**
    * Render type used for the structure renderer
