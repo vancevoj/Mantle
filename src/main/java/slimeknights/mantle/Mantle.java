@@ -87,8 +87,8 @@ import java.util.concurrent.CompletableFuture;
 public class Mantle {
   public static final String modId = "mantle";
   public static final Logger logger = LogManager.getLogger("Mantle");
-  /** Namespace for common tags, used for easier migration to the future "c" standard */
-  public static final String COMMON = "forge";
+  /** Namespace for common tags; 1.21/NeoForge uses the "c" convention (was "forge" in 1.20). */
+  public static final String COMMON = "c";
 
   /* Instance of this mod, used for grabbing prototype fields */
   public static Mantle instance;

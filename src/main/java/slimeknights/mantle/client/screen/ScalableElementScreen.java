@@ -45,11 +45,18 @@ public class ScalableElementScreen extends ElementScreen {
    * @return  Width for some reason
    */
   public int drawScaledYUp(GuiGraphics graphics, int xPos, int yPos, int height) {
-    // remainder that doesn't fit total height
+    // draw full-height tiles stacked upward from the bottom baseline (yPos + this.h). The old code
+    // only drew the partial remainder, so a full (height == this.h) or multi-tile bar rendered as a
+    // sliver or nothing (e.g. the smeltery fuel/fire bar disappeared at full fuel).
+    int full = height / this.h;
+    for (int i = 0; i < full; i++) {
+      this.draw(graphics, xPos, yPos + this.h - (i + 1) * this.h);
+    }
+    // remainder is the bottom slice of the texture, drawn just above the topmost full tile
     int remainder = height % this.h;
-    int offset = this.h - remainder;
     if (remainder > 0) {
-      graphics.blit(texture, xPos, yPos + offset, this.x, this.y + offset, this.w, remainder, this.texW, this.texH);
+      int topTileTop = yPos + this.h - full * this.h;
+      graphics.blit(texture, xPos, topTileTop - remainder, this.x, this.y + this.h - remainder, this.w, remainder, this.texW, this.texH);
     }
 
     return this.w;
