@@ -182,6 +182,18 @@ public abstract class InvertedFluid extends BaseFlowingFluid {
       && (spreadBlock.getFluidState().getType().isSame(this) || this.canHoldFluid(level, spreadPos, spreadBlock, fluid));
   }
 
+  /**
+   * Local reimplementation of vanilla {@code FlowingFluid#canPassThrough}. We deliberately do not widen that
+   * method through the access transformer: Lithium @Overwrites it with private visibility, and widening it to
+   * protected makes Lithium's FlowingFluidMixin fail to apply. The logic is trivial and only uses methods that
+   * are safe to widen.
+   */
+  private boolean canPassThrough(BlockGetter level, Fluid fluid, BlockPos pos, BlockState block, Direction direction, BlockPos spreadPos, BlockState spreadBlock, FluidState spreadFluid) {
+    return !this.isSourceBlockOfThisType(spreadFluid)
+      && this.canPassThroughWall(direction, level, pos, block, spreadPos, spreadBlock)
+      && this.canHoldFluid(level, spreadPos, spreadBlock, fluid);
+  }
+
   @Override
   protected Map<Direction, FluidState> getSpread(Level level, BlockPos pos, BlockState block) {
     int minDistance = 1000;
