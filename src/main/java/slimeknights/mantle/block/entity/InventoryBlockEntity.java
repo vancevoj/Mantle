@@ -25,6 +25,14 @@ public abstract class InventoryBlockEntity extends NameableBlockEntity implement
   private static final String TAG_INVENTORY_SIZE = "InventorySize";
   private static final String TAG_ITEMS = "Items";
   private static final String TAG_SLOT = "Slot";
+  /**
+   * Default stack size limit. Acts as a high ceiling so the real cap is each item's own max stack size
+   * ({@link ItemStack#getMaxStackSize()}), matching the rest of the game. Previously this was a flat 64,
+   * which capped tinker station / workbench slots at 64 even when a mod (e.g. Stack Size Tweaks) raised
+   * item stacks to 256, producing a stack-size mismatch and an item duplication bug. Inventories that
+   * truly need a smaller cap (e.g. the casting table at 1) still pass an explicit limit.
+   */
+  public static final int DEFAULT_STACK_SIZE_LIMIT = 1_000_000_000;
 
   private NonNullList<ItemStack> inventory;
   /** If true, the inventory size is saved to NBT, false means you are responsible for serializing it if it changes */
@@ -42,7 +50,7 @@ public abstract class InventoryBlockEntity extends NameableBlockEntity implement
    * @param name Localization String for the inventory title. Can be overridden through setCustomName
    */
   public InventoryBlockEntity(BlockEntityType<?> tileEntityTypeIn, BlockPos pos, BlockState state, Component name, boolean saveSizeToNBT, int inventorySize) {
-    this(tileEntityTypeIn, pos, state, name, saveSizeToNBT, inventorySize, 64);
+    this(tileEntityTypeIn, pos, state, name, saveSizeToNBT, inventorySize, DEFAULT_STACK_SIZE_LIMIT);
   }
 
   /**
@@ -102,6 +110,16 @@ public abstract class InventoryBlockEntity extends NameableBlockEntity implement
     return this.stackSizeLimit;
   }
 
+  /**
+   * Per-item stack limit: the smaller of this inventory's configured limit and the item's own max stack size.
+   * This keeps slots and storage in sync with the rest of the game (e.g. a 256-stack item stacks to 256 here,
+   * a 16-stack item to 16, a tool to 1), instead of a flat 64 that mismatched modded stack sizes and duped items.
+   */
+  @Override
+  public int getMaxStackSize(ItemStack stack) {
+    return Math.min(this.stackSizeLimit, stack.getMaxStackSize());
+  }
+
   @Override
   public void setItem(int slot, ItemStack itemstack) {
     if (slot < 0 || slot >= this.inventory.size()) {
@@ -111,8 +129,9 @@ public abstract class InventoryBlockEntity extends NameableBlockEntity implement
     ItemStack current = this.inventory.get(slot);
     this.inventory.set(slot, itemstack);
 
-    if (!itemstack.isEmpty() && itemstack.getCount() > this.getMaxStackSize()) {
-      itemstack.setCount(this.getMaxStackSize());
+    int limit = this.getMaxStackSize(itemstack);
+    if (!itemstack.isEmpty() && itemstack.getCount() > limit) {
+      itemstack.setCount(limit);
     }
     if (!ItemStack.matches(current, itemstack)) {
       this.setChangedFast();
@@ -160,7 +179,7 @@ public abstract class InventoryBlockEntity extends NameableBlockEntity implement
   @Override
   public boolean canPlaceItem(int slot, ItemStack itemstack) {
     if (slot < this.getContainerSize()) {
-      return this.inventory.get(slot).isEmpty() || itemstack.getCount() + this.inventory.get(slot).getCount() <= this.getMaxStackSize();
+      return this.inventory.get(slot).isEmpty() || itemstack.getCount() + this.inventory.get(slot).getCount() <= this.getMaxStackSize(itemstack);
     }
     return false;
   }
@@ -243,7 +262,6 @@ public abstract class InventoryBlockEntity extends NameableBlockEntity implement
   public void readInventoryFromNBT(CompoundTag tag, HolderLookup.Provider registries) {
     ListTag list = tag.getList(TAG_ITEMS, Tag.TAG_COMPOUND);
 
-    int limit = this.getMaxStackSize();
     for (int i = 0; i < list.size(); ++i) {
       CompoundTag itemTag = list.getCompound(i);
       int slot = itemTag.getByte(TAG_SLOT) & 255;
@@ -252,6 +270,7 @@ public abstract class InventoryBlockEntity extends NameableBlockEntity implement
         // just {Slot:N} (no "id") makes the strict ItemStack codec throw ("No key id in MapLike"),
         // which dropped the synced item client-side (casting table contents looked invisible).
         ItemStack stack = itemTag.contains("id") ? ItemStack.parseOptional(registries, itemTag) : ItemStack.EMPTY;
+        int limit = this.getMaxStackSize(stack);
         if (!stack.isEmpty() && stack.getCount() > limit) {
           stack.setCount(limit);
         }
