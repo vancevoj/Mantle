@@ -16,9 +16,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 import slimeknights.mantle.block.entity.INameableMenuProvider;
+import slimeknights.mantle.block.entity.InventoryBlockEntity;
 import slimeknights.mantle.inventory.BaseContainerMenu;
 
 import javax.annotation.Nullable;
@@ -96,9 +96,12 @@ public abstract class InventoryBlock extends Block implements EntityBlock {
     if (state.getBlock() != newState.getBlock()) {
       BlockEntity te = worldIn.getBlockEntity(pos);
       if (te != null) {
-        IItemHandler inventory = worldIn.getCapability(Capabilities.ItemHandler.BLOCK, pos, null);
-        if (inventory != null) {
-          dropInventoryItems(state, worldIn, pos, inventory);
+        // NeoForge 1.21.1: by the time onRemove runs, the chunk already stores newState (air) at pos, so
+        // worldIn.getCapability(ItemHandler.BLOCK, pos, null) looks up providers for newState.getBlock()
+        // (= air, no provider) and returns null -> the inventory never dropped. The block entity itself is
+        // still present here, so read its handler directly instead of going through the (now-air) world cap.
+        if (te instanceof InventoryBlockEntity inv) {
+          dropInventoryItems(state, worldIn, pos, inv.getItemHandler());
         }
         worldIn.updateNeighbourForOutputSignal(pos, this);
       }
