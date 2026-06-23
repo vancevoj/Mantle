@@ -1,0 +1,65 @@
+name: Bug Report
+description: Report a bug in Neo Mantle (NeoForge 1.21.1)
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report! Please [search existing issues](https://github.com/vancevoj/neomantle/issues?q=is%3Aissue) first so we don't get duplicates.
+
+        Neo Mantle is a library, so most bugs show up through a mod that depends on it (e.g. Neo Tinkers) — please include that below.
+  - type: input
+    id: neomantle-version
+    attributes:
+      label: Neo Mantle version
+      description: From the mods list or the jar name.
+      placeholder: "v1.21"
+    validations:
+      required: true
+  - type: input
+    id: neoforge-version
+    attributes:
+      label: NeoForge version
+      placeholder: "21.1.233"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug — what you expected to happen, and what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: log
+    attributes:
+      label: Crash report or log
+      description: Paste a link (e.g. mclo.gs, gist, pastebin) to your crash report or latest.log, if there is one.
+    validations:
+      required: false
+  - type: textarea
+    id: dependent-mods
+    attributes:
+      label: Which mods using Neo Mantle were you running?
+      description: List the mods that depend on Neo Mantle (and any others) that were installed when the bug occurred.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this isn't a duplicate
+          required: true
+        - label: I'm on the latest version of Neo Mantle
+          required: true
