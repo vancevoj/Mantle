@@ -13,6 +13,11 @@ Shared code for Slime Knights mods and others. Neo Mantle is vancevoj's NeoForge
     '''
     displayURL="https://github.com/vancevoj/Mantle"
 
+# Compatibility patch: tolerate duplicate serialized names in extensible enums (StringRepresentable),
+# preventing crashes when another mod registers colliding enum values (e.g. Petrolpark's ItemDisplayContext).
+[[mixins]]
+    config="mantle.mixins.json"
+
 [[dependencies.mantle]]
     modId="neoforge"
     type="required"
