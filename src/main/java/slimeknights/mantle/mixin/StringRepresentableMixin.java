@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * unique serialized names every well-behaved enum has, the merge function never runs.
  */
 @Mixin(StringRepresentable.class)
-public class StringRepresentableMixin {
+public interface StringRepresentableMixin {
   @Redirect(
     method = "createNameLookup",
     at = @At(value = "INVOKE", target = "Ljava/util/stream/Collectors;toMap(Ljava/util/function/Function;Ljava/util/function/Function;)Ljava/util/stream/Collector;"),
