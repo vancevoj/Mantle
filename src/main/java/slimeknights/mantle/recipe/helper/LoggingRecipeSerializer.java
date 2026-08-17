@@ -1,5 +1,7 @@
 package slimeknights.mantle.recipe.helper;
 
+import io.netty.handler.codec.DecoderException;
+import io.netty.handler.codec.EncoderException;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.crafting.Recipe;
@@ -35,8 +37,10 @@ public interface LoggingRecipeSerializer<T extends Recipe<?>> extends RecipeSeri
     try {
       return fromNetworkSafe(buffer);
     } catch (RuntimeException e) {
-      Mantle.logger.error("{}: Error reading recipe from packet", this.getClass().getSimpleName(), e);
-      throw e;
+      // wrap in a decoder exception so the client disconnect screen names the serializer instead of a bare error
+      String error = this.getClass().getSimpleName() + ": Error reading recipe from packet";
+      Mantle.logger.error("{}", error, e);
+      throw new DecoderException(error + " - " + e.getMessage(), e);
     }
   }
 
@@ -45,8 +49,10 @@ public interface LoggingRecipeSerializer<T extends Recipe<?>> extends RecipeSeri
     try {
       toNetworkSafe(buffer, recipe);
     } catch (RuntimeException e) {
-      Mantle.logger.error("{}: Error writing recipe of class {} and type {} to packet", this.getClass().getSimpleName(), recipe.getClass().getSimpleName(), recipe.getType(), e);
-      throw e;
+      // wrap in an encoder exception so the disconnect screen names the serializer instead of a bare error
+      String error = this.getClass().getSimpleName() + ": Error writing recipe of class " + recipe.getClass().getSimpleName() + " and type " + recipe.getType() + " to packet";
+      Mantle.logger.error("{}", error, e);
+      throw new EncoderException(error + " - " + e.getMessage(), e);
     }
   }
 

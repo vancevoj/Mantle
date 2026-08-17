@@ -56,11 +56,10 @@ public abstract class InventoryBlock extends Block implements EntityBlock {
 
   @Override
   protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult rayTraceResult) {
-    if (player.isSuppressingBounce()) {
-      return InteractionResult.PASS;
-    }
+    // mirrors vanilla ChestBlock/AbstractFurnaceBlock: no bounce-suppression gate (block placement already ran in
+    // useItemOn), and consume on the server so the menu open is not double counted
     if (!world.isClientSide) {
-      return this.openGui(player, world, pos) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+      return this.openGui(player, world, pos) ? InteractionResult.CONSUME : InteractionResult.PASS;
     }
     return InteractionResult.SUCCESS;
   }
