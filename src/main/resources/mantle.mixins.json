@@ -1,0 +1,12 @@
+{
+  "required": false,
+  "minVersion": "0.8.5",
+  "package": "slimeknights.mantle.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "StringRepresentableMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

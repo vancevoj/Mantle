@@ -175,8 +175,15 @@ public abstract class InvertedFluid extends BaseFlowingFluid {
     return minSlope;
   }
 
-  @Override
-  protected boolean isWaterHole(BlockGetter level, Fluid fluid, BlockPos pos, BlockState block, BlockPos spreadPos, BlockState spreadBlock) {
+  /**
+   * Local reimplementation of vanilla {@code FlowingFluid#isWaterHole} (inverted: checks UP instead of DOWN). As with
+   * {@link #canPassThrough}, we deliberately do not widen the vanilla method through the access transformer: Lithium
+   * {@code @Overwrite}s isWaterHole with private visibility, and widening it to protected makes Lithium's
+   * FlowingFluidMixin fail to apply ("cannot reduce visibility of PROTECTED target method"). InvertedFluid overrides
+   * every vanilla method that calls isWaterHole ({@link #spread}, {@link #getSpread}, {@link #getSlopeDistance}), so
+   * this private helper fully replaces it for inverted fluids.
+   */
+  private boolean isWaterHole(BlockGetter level, Fluid fluid, BlockPos pos, BlockState block, BlockPos spreadPos, BlockState spreadBlock) {
     // recreation swapping downs for ups
     return this.canPassThroughWall(Direction.UP, level, pos, block, spreadPos, spreadBlock)
       && (spreadBlock.getFluidState().getType().isSame(this) || this.canHoldFluid(level, spreadPos, spreadBlock, fluid));
